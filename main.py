@@ -1,7 +1,6 @@
 print("staring main.py")
 from bot import run main.py
 #!/usr/bin/env python3
-"""
 AI Trading Bot - Main Entry Point
 Compatible with Python 3.8+ and Ubuntu 20.04
 """
