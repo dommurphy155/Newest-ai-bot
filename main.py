@@ -1,3 +1,4 @@
+print("staring main.py")
 from bot import run_bot
 
 if __name__ == "__main__":
