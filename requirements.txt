@@ -1,22 +1,19 @@
-# Core Trading APIs - Ubuntu 20.04 Python 3.8 Optimized
+# Core Trading APIs - Ubuntu 20.04 Python 3.8.10 Compatible
 oandapyV20==0.7.2
 
-# Telegram Bot
+# Telegram Bot - Compatible with Python 3.8
 python-telegram-bot==20.0
 
-# HTTP and Async Libraries - Lightweight
+# HTTP and Async Libraries - Ubuntu 20.04 Compatible
 aiohttp==3.8.6
 httpx==0.24.1
 
-# Data Processing - Essential Only
+# Data Processing - Python 3.8.10 Compatible
 numpy==1.21.6
 pandas==1.5.3
 
-# Database - Lightweight
+# Database - Lightweight and Compatible
 aiosqlite==0.19.0
-
-# Configuration and Environment
-python-dotenv==1.0.0
 
 # News and Sentiment Analysis - Lightweight
 feedparser==6.0.10
@@ -29,37 +26,37 @@ yfinance==0.2.18
 # Crypto Support - Lightweight
 ccxt==4.1.39
 
-# Time and Date
+# Time and Date - Python 3.8 Compatible
 python-dateutil==2.8.2
 pytz==2023.3
 
-# Logging
+# Logging - Compatible
 structlog==23.2.0
 
-# Development and Testing
+# Development and Testing - Python 3.8
 pytest==7.4.3
 pytest-asyncio==0.21.1
 
-# Performance
+# Performance - Ubuntu 20.04 Compatible
 psutil==5.9.6
 
-# Web Scraping - Lightweight
+# Web Scraping - Lightweight and Compatible
 beautifulsoup4==4.12.2
 lxml==4.9.3
 
-# HTTP Rate Limiting
+# HTTP Rate Limiting - Compatible
 ratelimit==2.2.1
 tenacity==8.2.3
 
-# Security
+# Security - Ubuntu 20.04 Compatible
 cryptography==41.0.8
 
-# Utilities
+# Utilities - Python 3.8 Compatible
 click==8.1.7
 rich==13.6.0
 
-# Data Validation
+# Data Validation - Python 3.8 Compatible
 pydantic==1.10.13
 
-# JSON Schema
+# JSON Schema - Compatible
 jsonschema==4.19.1

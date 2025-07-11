@@ -190,17 +190,6 @@ async def main():
         return 1
 
 if __name__ == "__main__":
-    # Check environment variables
-    required_vars = [
-        'OANDA_API_KEY', 'OANDA_ACCOUNT_ID', 
-        'TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID'
-    ]
-    
-    missing_vars = [var for var in required_vars if not os.getenv(var)]
-    if missing_vars:
-        logger.error(f"❌ Missing environment variables: {missing_vars}")
-        sys.exit(1)
-    
     # Run the bot
     try:
         exit_code = asyncio.run(main())
