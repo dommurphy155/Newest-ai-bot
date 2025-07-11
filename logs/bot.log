@@ -1,0 +1,2 @@
+2025-07-11 05:32:43,177 - root - ERROR - Telegram imports failed: No module named 'telegram'
+2025-07-11 05:32:43,177 - main - ERROR - Failed to import modules: No module named 'telegram'

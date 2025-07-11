@@ -165,15 +165,15 @@ class EnhancedNewsScraper:
             ]
         }
         
-        # Market data containers
-        self.sentiment_history = deque(maxlen=1000)
-        self.news_cache = deque(maxlen=500)
+        # Market data containers - Increased sizes for better performance
+        self.sentiment_history = deque(maxlen=5000)  # Increased from 1000
+        self.news_cache = deque(maxlen=2000)  # Increased from 500
         self.market_data_cache = {}
         
         # Performance tracking
         self.news_scans = 0
         self.market_scans = 0
-        self.sentiment_scores = deque(maxlen=100)
+        self.sentiment_scores = deque(maxlen=500)  # Increased from 100
         
         # Crypto exchange for additional market data
         self.crypto_exchange = None
@@ -258,8 +258,8 @@ class EnhancedNewsScraper:
                     'sources_scanned': len(self.news_sources)
                 })
                 
-                # Cache recent articles
-                for article in all_articles[-50:]:  # Keep last 50 articles
+                # Cache recent articles with larger buffer
+                for article in all_articles[-200:]:  # Keep last 200 articles (increased from 50)
                     self.news_cache.append(article)
                 
                 logger.debug(f"📰 News scan complete: {len(all_articles)} articles, sentiment: {sentiment_score:.3f}")
@@ -287,7 +287,7 @@ class EnhancedNewsScraper:
                     feed = feedparser.parse(content)
                     
                     articles = []
-                    for entry in feed.entries[:20]:  # Limit to recent articles
+                    for entry in feed.entries[:50]:  # Increased to 50 articles per source (from 20)
                         article = {
                             'title': entry.get('title', ''),
                             'description': entry.get('summary', ''),
@@ -323,7 +323,7 @@ class EnhancedNewsScraper:
         try:
             # Generic JSON processing - adapt based on actual API structure
             if 'articles' in data:
-                for item in data['articles'][:20]:
+                for item in data['articles'][:50]:  # Increased to 50 articles (from 20)
                     article = {
                         'title': item.get('title', ''),
                         'description': item.get('description', ''),
@@ -625,4 +625,4 @@ class EnhancedNewsScraper:
         logger.info("🛑 Market Intelligence System stopped")
 
 # Maintain backward compatibility
-EnhancedNewsScraper = AdvancedMarketIntelligence
+# EnhancedNewsScraper = AdvancedMarketIntelligence
