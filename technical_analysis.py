@@ -177,4 +177,39 @@ class TechnicalAnalyzer:
             rsi = self.calculate_rsi(close)
             macd, macd_signal, macd_histogram = self.calculate_macd(close)
             bollinger_upper, bollinger_lower, bollinger_middle = self.calculate_bollinger_bands(close)
-            sma_20 = close.
+            sma_20 = close.rolling(window=20).mean().iloc[-1]
+            sma_50 = close.rolling(window=50).mean().iloc[-1]
+            ema_12 = close.ewm(span=12).mean().iloc[-1]
+            ema_26 = close.ewm(span=26).mean().iloc[-1]
+            stoch_k, stoch_d = self.calculate_stochastic(high, low, close)
+            atr = self.calculate_atr(high, low, close).iloc[-1]
+            adx = self.calculate_adx(high, low, close).iloc[-1]
+            williams_r = self.calculate_williams_r(high, low, close).iloc[-1]
+            momentum = self.calculate_momentum(close).iloc[-1]
+            roc = self.calculate_roc(close).iloc[-1]
+            cci = self.calculate_cci(high, low, close).iloc[-1]
+
+            return TechnicalIndicators(
+                rsi=rsi.iloc[-1],
+                macd=macd.iloc[-1],
+                macd_signal=macd_signal.iloc[-1],
+                macd_histogram=macd_histogram.iloc[-1],
+                bollinger_upper=bollinger_upper.iloc[-1],
+                bollinger_lower=bollinger_lower.iloc[-1],
+                bollinger_middle=bollinger_middle.iloc[-1],
+                sma_20=sma_20,
+                sma_50=sma_50,
+                ema_12=ema_12,
+                ema_26=ema_26,
+                stoch_k=stoch_k.iloc[-1],
+                stoch_d=stoch_d.iloc[-1],
+                atr=atr,
+                adx=adx,
+                williams_r=williams_r,
+                momentum=momentum,
+                roc=roc,
+                cci=cci
+            )
+        except Exception as e:
+            logger.error(f"Error calculating indicators for {instrument}: {e}")
+            return None
