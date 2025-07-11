@@ -2,6 +2,7 @@
 """
 Configuration Management for AI Trading Bot
 Production-ready configuration using environment variables only
+Optimized for Ubuntu 20.04 + Python 3.8.10
 """
 
 import os

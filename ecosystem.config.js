@@ -2,7 +2,7 @@ module.exports = {
   apps: [{
     name: 'ai-trading-bot',
     script: 'main.py',
-    interpreter: 'python3',
+    interpreter: '/usr/bin/python3.8',
     cwd: '/workspace',
     instances: 1,
     autorestart: true,
@@ -11,7 +11,11 @@ module.exports = {
     env: {
       NODE_ENV: 'production',
       PYTHONPATH: '/workspace',
-      PYTHONUNBUFFERED: '1'
+      PYTHONUNBUFFERED: '1',
+      PYTHON_VERSION: '3.8.10',
+      UBUNTU_VERSION: '20.04',
+      LC_ALL: 'C.UTF-8',
+      LANG: 'C.UTF-8'
     },
     error_file: './logs/pm2-error.log',
     out_file: './logs/pm2-out.log',
@@ -24,6 +28,10 @@ module.exports = {
     restart_delay: 4000,
     kill_timeout: 5000,
     wait_ready: true,
-    listen_timeout: 8000
+    listen_timeout: 8000,
+    exec_mode: 'fork',
+    increment_var: 'PORT',
+    combine_logs: true,
+    force: true
   }]
 };
