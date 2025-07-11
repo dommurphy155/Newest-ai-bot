@@ -77,9 +77,9 @@ class DatabaseConfig:
     backup_interval: int = 3600  # 1 hour
     max_backups: int = 24
     
-    # Memory optimization settings
-    max_memory_mb: int = 100  # Limit database memory usage
-    cache_size_kb: int = 2048  # 2MB cache
+    # Memory optimization settings - Using more memory for better performance
+    max_memory_mb: int = 512  # Allow up to 512MB for database operations
+    cache_size_kb: int = 8192  # 8MB cache (increased from 2MB)
 
 @dataclass
 class LoggingConfig:
@@ -87,8 +87,8 @@ class LoggingConfig:
     log_level: str = "INFO"
     log_file: str = "logs/bot.log"
     error_file: str = "logs/error.log"
-    max_file_size: int = 5 * 1024 * 1024  # 5MB (reduced from 10MB)
-    backup_count: int = 3  # Reduced from 5 for memory savings
+    max_file_size: int = 20 * 1024 * 1024  # 20MB (increased from 5MB)
+    backup_count: int = 10  # Increased from 3 for better history
 
 class Config:
     """Main configuration class optimized for Ubuntu 20.04 + Python 3.8.10"""

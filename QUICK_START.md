@@ -43,9 +43,10 @@ export TELEGRAM_CHAT_ID='your_chat_id'
 ## ✅ System Requirements Met
 - ✅ Ubuntu 20.04
 - ✅ Python 3.8.10
-- ✅ 0.6GB RAM optimized
+- ✅ 1GB+ RAM optimized for performance
 - ✅ All dependencies compatible
-- ✅ Memory usage ~100-200MB
-- ✅ Auto-cleanup every 3.5 days
+- ✅ Memory usage ~200-500MB (performance mode)
+- ✅ Enhanced caching and analysis
+- ✅ Auto-cleanup every 2 hours
 
-## 🎉 You're Ready to Trade!
+## 🎉 You're Ready for High-Performance Trading!

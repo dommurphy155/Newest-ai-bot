@@ -156,14 +156,14 @@ class TradingBotManager:
             await self.shutdown()
     
     async def cleanup_scheduler(self):
-        """Schedule regular cleanup to maintain low memory usage"""
+        """Schedule regular cleanup to maintain optimal performance"""
         while self.running:
             try:
-                await asyncio.sleep(3600)  # Clean every hour
+                await asyncio.sleep(7200)  # Clean every 2 hours (less aggressive)
                 await self.cleanup_old_data()
             except Exception as e:
                 logger.error(f"Cleanup scheduler error: {e}")
-                await asyncio.sleep(3600)
+                await asyncio.sleep(7200)
     
     async def health_monitor(self):
         """Monitor system health and performance"""

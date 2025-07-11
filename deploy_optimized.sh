@@ -110,27 +110,31 @@ install_packages() {
 
 # Configure system for low memory
 optimize_system() {
-    log "Optimizing system for low memory usage..."
+    log "Optimizing system for better performance..."
     
-    # Create swap file if memory is low
+    # Create swap file if memory is very low (only if less than 2GB)
     MEMORY_MB=$(free -m | awk '/^Mem:/{print $2}')
-    if [ "$MEMORY_MB" -lt 1024 ]; then
-        log "Creating swap file for low memory system..."
+    if [ "$MEMORY_MB" -lt 2048 ]; then
+        log "Creating swap file for system with less than 2GB memory..."
         
         if [ ! -f /swapfile ]; then
-            sudo fallocate -l 1G /swapfile
+            sudo fallocate -l 2G /swapfile
             sudo chmod 600 /swapfile
             sudo mkswap /swapfile
             sudo swapon /swapfile
             echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
         fi
+    else
+        log "Sufficient memory detected (${MEMORY_MB}MB), skipping swap creation"
     fi
     
-    # Set memory limits for the bot
+    # Set optimal memory settings for performance
     echo "vm.swappiness=10" | sudo tee -a /etc/sysctl.conf
     echo "vm.vfs_cache_pressure=50" | sudo tee -a /etc/sysctl.conf
+    echo "vm.dirty_ratio=15" | sudo tee -a /etc/sysctl.conf
+    echo "vm.dirty_background_ratio=5" | sudo tee -a /etc/sysctl.conf
     
-    log "✅ System optimized for low memory"
+    log "✅ System optimized for performance"
 }
 
 # Setup directories and permissions
@@ -163,7 +167,7 @@ create_service() {
     
     sudo tee /etc/systemd/system/ai-trading-bot.service > /dev/null <<EOF
 [Unit]
-Description=AI Trading Bot - Memory Optimized
+Description=AI Trading Bot - Performance Optimized
 After=network.target
 Wants=network-online.target
 
@@ -180,10 +184,10 @@ RestartSec=30
 StandardOutput=append:$(pwd)/logs/service.log
 StandardError=append:$(pwd)/logs/service-error.log
 
-# Memory and CPU limits for low-resource systems
-MemoryMax=400M
-MemoryHigh=300M
-CPUQuota=80%
+# Memory and CPU limits - Generous limits for better performance
+MemoryMax=2G
+MemoryHigh=1.5G
+CPUQuota=150%
 
 # Security settings
 NoNewPrivileges=true
@@ -333,9 +337,10 @@ main() {
     echo "4. View logs:"
     echo "   tail -f logs/bot.log"
     echo ""
-    echo "💾 Memory footprint: ~100-200MB"
+    echo "💾 Memory footprint: ~200-500MB (optimized for performance)"
     echo "⚡ Installation size: ~50MB"
-    echo "🔧 Optimized for 0.6GB systems"
+    echo "� Optimized for systems with 1GB+ RAM"
+    echo "🔧 Enhanced caching and performance features"
     echo ""
     echo "🚀 Happy trading!"
 }

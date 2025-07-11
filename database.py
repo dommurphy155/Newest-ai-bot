@@ -52,17 +52,19 @@ class Database:
         """Initialize database and create tables if missing."""
         try:
             async with aiosqlite.connect(self.db_path) as db:
-                # Memory optimization for low-memory systems
-                await db.execute("PRAGMA cache_size = -2048")  # 2MB cache
+                # Memory optimization for better performance - using more memory when available
+                await db.execute("PRAGMA cache_size = -8192")  # 8MB cache (increased from 2MB)
                 await db.execute("PRAGMA temp_store = MEMORY")
-                await db.execute("PRAGMA mmap_size = 67108864")  # 64MB mmap
+                await db.execute("PRAGMA mmap_size = 268435456")  # 256MB mmap (increased from 64MB)
                 await db.execute("PRAGMA journal_mode = WAL")
                 await db.execute("PRAGMA synchronous = NORMAL")
                 await db.execute("PRAGMA page_size = 4096")
+                await db.execute("PRAGMA wal_autocheckpoint = 1000")  # Checkpoint every 1000 pages
+                await db.execute("PRAGMA optimize")  # Optimize database performance
                 
                 await self._create_tables(db)
                 await db.commit()
-            logger.info("Database initialized successfully with memory optimizations")
+            logger.info("Database initialized successfully with enhanced memory settings")
         except Exception as e:
             logger.error(f"Database initialization failed: {e}")
             raise
