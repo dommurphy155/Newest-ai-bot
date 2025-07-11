@@ -625,4 +625,4 @@ class EnhancedNewsScraper:
         logger.info("🛑 Market Intelligence System stopped")
 
 # Maintain backward compatibility
-EnhancedNewsScraper = AdvancedMarketIntelligence
+# EnhancedNewsScraper = AdvancedMarketIntelligence

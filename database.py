@@ -52,9 +52,17 @@ class Database:
         """Initialize database and create tables if missing."""
         try:
             async with aiosqlite.connect(self.db_path) as db:
+                # Memory optimization for low-memory systems
+                await db.execute("PRAGMA cache_size = -2048")  # 2MB cache
+                await db.execute("PRAGMA temp_store = MEMORY")
+                await db.execute("PRAGMA mmap_size = 67108864")  # 64MB mmap
+                await db.execute("PRAGMA journal_mode = WAL")
+                await db.execute("PRAGMA synchronous = NORMAL")
+                await db.execute("PRAGMA page_size = 4096")
+                
                 await self._create_tables(db)
                 await db.commit()
-            logger.info("Database initialized successfully")
+            logger.info("Database initialized successfully with memory optimizations")
         except Exception as e:
             logger.error(f"Database initialization failed: {e}")
             raise
@@ -368,3 +376,16 @@ class Database:
                 logger.info(f"Cleaned up data older than {days_to_keep} days")
         except Exception as e:
             logger.error(f"Error cleaning up old data: {e}")
+
+    async def execute(self, query: str, params: tuple = None):
+        """Execute arbitrary SQL query - used for cleanup operations"""
+        try:
+            async with aiosqlite.connect(self.db_path) as db:
+                if params:
+                    await db.execute(query, params)
+                else:
+                    await db.execute(query)
+                await db.commit()
+        except Exception as e:
+            logger.error(f"Error executing query: {e}")
+            raise

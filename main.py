@@ -9,7 +9,7 @@ import sys
 import asyncio
 import logging
 import signal
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 # Ensure Python 3.8+ compatibility
@@ -17,7 +17,11 @@ if sys.version_info < (3, 8):
     print("❌ Python 3.8+ required. Current version:", sys.version)
     sys.exit(1)
 
-# Setup logging before imports
+# Create directories before logging setup
+Path("logs").mkdir(exist_ok=True)
+Path("data").mkdir(exist_ok=True)
+
+# Setup logging after ensuring directories exist
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -41,7 +45,7 @@ except ImportError as e:
     sys.exit(1)
 
 class TradingBotManager:
-    """Production-ready trading bot manager"""
+    """Production-ready trading bot manager with memory optimization"""
     
     def __init__(self):
         self.trader = None
@@ -51,14 +55,44 @@ class TradingBotManager:
         self.analyzer = None
         self.running = False
         
+    async def cleanup_old_data(self):
+        """Clean up old data to save storage and memory"""
+        try:
+            cutoff_date = datetime.now() - timedelta(days=3.5)
+            
+            if self.db:
+                # Clean old news data
+                await self.db.execute(
+                    "DELETE FROM news_sentiment WHERE timestamp < ?", 
+                    (cutoff_date,)
+                )
+                
+                # Clean old trade data older than 30 days
+                old_trades_cutoff = datetime.now() - timedelta(days=30)
+                await self.db.execute(
+                    "DELETE FROM trades WHERE timestamp < ?", 
+                    (old_trades_cutoff,)
+                )
+                
+                # Vacuum database to reclaim space
+                await self.db.execute("VACUUM")
+                
+            # Clean old log files
+            logs_dir = Path("logs")
+            if logs_dir.exists():
+                for log_file in logs_dir.glob("*.log"):
+                    if log_file.stat().st_mtime < cutoff_date.timestamp():
+                        log_file.unlink()
+                        
+            logger.info(f"🧹 Cleaned data older than {cutoff_date}")
+            
+        except Exception as e:
+            logger.error(f"Error cleaning old data: {e}")
+        
     async def initialize_components(self):
         """Initialize all trading bot components"""
         try:
             logger.info("🚀 Initializing AI Trading Bot v3.0...")
-            
-            # Create directories
-            Path("logs").mkdir(exist_ok=True)
-            Path("data").mkdir(exist_ok=True)
             
             # Initialize database
             self.db = Database(config.database.db_path)
@@ -89,6 +123,9 @@ class TradingBotManager:
             )
             logger.info("✅ Enhanced Telegram bot ready")
             
+            # Clean old data on startup
+            await self.cleanup_old_data()
+            
             logger.info("🎯 All components initialized successfully!")
             return True
             
@@ -107,7 +144,8 @@ class TradingBotManager:
                 asyncio.create_task(self.trader.run()),
                 asyncio.create_task(self.bot.run()),
                 asyncio.create_task(self.scraper.continuous_monitoring()),
-                asyncio.create_task(self.health_monitor())
+                asyncio.create_task(self.health_monitor()),
+                asyncio.create_task(self.cleanup_scheduler())
             ]
             
             # Wait for all tasks
@@ -116,6 +154,16 @@ class TradingBotManager:
         except Exception as e:
             logger.error(f"❌ Trading system error: {e}")
             await self.shutdown()
+    
+    async def cleanup_scheduler(self):
+        """Schedule regular cleanup to maintain low memory usage"""
+        while self.running:
+            try:
+                await asyncio.sleep(3600)  # Clean every hour
+                await self.cleanup_old_data()
+            except Exception as e:
+                logger.error(f"Cleanup scheduler error: {e}")
+                await asyncio.sleep(3600)
     
     async def health_monitor(self):
         """Monitor system health and performance"""

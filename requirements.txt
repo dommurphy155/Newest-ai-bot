@@ -1,62 +1,65 @@
-# Core Trading APIs - Ubuntu 20.04 Python 3.8.10 Compatible
+# Optimized for Ubuntu 20.04 + Python 3.8.10
+# Memory-efficient versions for 0.6GB system
+
+# Core Trading APIs
 oandapyV20==0.7.2
 
-# Telegram Bot - Compatible with Python 3.8
-python-telegram-bot==20.0
+# Telegram Bot - Lightweight version
+python-telegram-bot==13.15
 
-# HTTP and Async Libraries - Ubuntu 20.04 Compatible
+# HTTP and Async Libraries - Memory optimized
 aiohttp==3.8.6
 httpx==0.24.1
 
-# Data Processing - Python 3.8.10 Compatible
+# Data Processing - Memory efficient versions
 numpy==1.21.6
-pandas==1.5.3
+pandas==1.3.5
 
-# Database - Lightweight and Compatible
-aiosqlite==0.19.0
+# Database - Lightweight
+aiosqlite==0.17.0
 
-# News and Sentiment Analysis - Lightweight
+# News and Sentiment Analysis - Essential only
 feedparser==6.0.10
 textblob==0.17.1
 vaderSentiment==3.3.2
 
 # Market Data - Essential
-yfinance==0.2.18
+yfinance==0.1.96
 
 # Crypto Support - Lightweight
-ccxt==4.1.39
+ccxt==2.9.54
 
 # Time and Date - Python 3.8 Compatible
 python-dateutil==2.8.2
-pytz==2023.3
+pytz==2022.7.1
 
-# Logging - Compatible
-structlog==23.2.0
+# Logging - Memory efficient
+structlog==22.3.0
 
-# Development and Testing - Python 3.8
-pytest==7.4.3
-pytest-asyncio==0.21.1
+# Development and Testing - Minimal
+pytest==7.2.2
+pytest-asyncio==0.20.3
 
 # Performance - Ubuntu 20.04 Compatible
-psutil==5.9.6
+psutil==5.9.0
 
-# Web Scraping - Lightweight and Compatible
-beautifulsoup4==4.12.2
-lxml==4.9.3
+# Web Scraping - Lightweight
+beautifulsoup4==4.11.2
+lxml==4.9.1
 
-# HTTP Rate Limiting - Compatible
+# HTTP Rate Limiting - Memory efficient
 ratelimit==2.2.1
-tenacity==8.2.3
+tenacity==8.1.0
 
 # Security - Ubuntu 20.04 Compatible
-cryptography==41.0.8
+cryptography==3.4.8
 
 # Utilities - Python 3.8 Compatible
-click==8.1.7
-rich==13.6.0
+click==8.0.4
+rich==12.6.0
 
-# Data Validation - Python 3.8 Compatible
-pydantic==1.10.13
+# Data Validation - Memory efficient
+pydantic==1.10.2
 
 # JSON Schema - Compatible
-jsonschema==4.19.1
+jsonschema==4.17.3
