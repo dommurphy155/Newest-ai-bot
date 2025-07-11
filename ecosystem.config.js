@@ -3,7 +3,7 @@ module.exports = {
     name: 'ai-trading-bot',
     script: 'main.py',
     interpreter: '/usr/bin/python3.8',
-    cwd: '/workspace',
+    cwd: '/home/ubuntu/Newest-ai-bot',
     instances: 1,
     autorestart: true,
     watch: false,
