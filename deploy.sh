@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # AI Trading Bot v3.0 - Production Deployment Script
-# Compatible with Ubuntu 20.04, Python 3.8+, and PM2
-# Optimized for Maximum Profit Generation
+# Specifically optimized for Ubuntu 20.04 + Python 3.8.10 + PM2
+# Maximum Profit Generation Configuration
 
 set -e  # Exit on any error
 
@@ -43,19 +43,28 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# Function to check Python version
+# Function to check Python version (specifically 3.8.10 for Ubuntu 20.04)
 check_python_version() {
-    if command_exists python3; then
-        PYTHON_VER=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
-        if python3 -c "import sys; exit(0 if sys.version_info >= (3, 8) else 1)"; then
+    if command_exists python3.8; then
+        PYTHON_VER=$(python3.8 -c 'import sys; print(".".join(map(str, sys.version_info[:3])))')
+        if python3.8 -c "import sys; exit(0 if sys.version_info >= (3, 8, 10) else 1)"; then
+            print_success "Python $PYTHON_VER detected (Ubuntu 20.04 compatible)"
+            PYTHON_CMD="python3.8"
+        else
+            print_error "Python $PYTHON_VER detected (requires 3.8.10+ for Ubuntu 20.04)"
+            exit 1
+        fi
+    elif command_exists python3; then
+        PYTHON_VER=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:3])))')
+        if python3 -c "import sys; exit(0 if sys.version_info >= (3, 8, 10) else 1)"; then
             print_success "Python $PYTHON_VER detected (compatible)"
             PYTHON_CMD="python3"
         else
-            print_error "Python $PYTHON_VER detected (requires 3.8+)"
+            print_error "Python $PYTHON_VER detected (requires 3.8.10+ for Ubuntu 20.04)"
             exit 1
         fi
     else
-        print_error "Python 3 not found"
+        print_error "Python 3.8.10+ not found - required for Ubuntu 20.04"
         exit 1
     fi
 }
@@ -210,8 +219,8 @@ create_pm2_config() {
 module.exports = {
   apps: [{
     name: '$BOT_NAME',
-    script: '$VENV_DIR/bin/python',
-    args: 'main.py',
+    script: 'main.py',
+    interpreter: '$VENV_DIR/bin/python',
     cwd: '$BOT_DIR',
     instances: 1,
     autorestart: true,
@@ -220,7 +229,11 @@ module.exports = {
     env: {
       NODE_ENV: 'production',
       PYTHONPATH: '$BOT_DIR',
-      PYTHONUNBUFFERED: '1'
+      PYTHONUNBUFFERED: '1',
+      PYTHON_VERSION: '3.8.10',
+      UBUNTU_VERSION: '20.04',
+      LC_ALL: 'C.UTF-8',
+      LANG: 'C.UTF-8'
     },
     error_file: '$LOG_DIR/pm2-error.log',
     out_file: '$LOG_DIR/pm2-out.log',
@@ -230,7 +243,13 @@ module.exports = {
     log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
     min_uptime: '10s',
     max_restarts: 10,
-    restart_delay: 4000
+    restart_delay: 4000,
+    kill_timeout: 5000,
+    wait_ready: true,
+    listen_timeout: 8000,
+    exec_mode: 'fork',
+    combine_logs: true,
+    force: true
   }]
 };
 EOF
@@ -412,9 +431,21 @@ main() {
         exit 1
     fi
     
-    # Check operating system
-    if ! grep -q "Ubuntu" /etc/os-release; then
-        print_warning "This script is optimized for Ubuntu 20.04"
+    # Check operating system (specifically Ubuntu 20.04)
+    if grep -q "Ubuntu" /etc/os-release; then
+        UBUNTU_VER=$(grep VERSION_ID /etc/os-release | cut -d'"' -f2)
+        if [[ "$UBUNTU_VER" == "20.04" ]]; then
+            print_success "Ubuntu 20.04 detected (optimal)"
+        else
+            print_warning "Ubuntu $UBUNTU_VER detected - this script is optimized for Ubuntu 20.04"
+            read -p "Continue anyway? (y/N): " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                exit 1
+            fi
+        fi
+    else
+        print_warning "Non-Ubuntu system detected - this script is optimized for Ubuntu 20.04"
         read -p "Continue anyway? (y/N): " -n 1 -r
         echo
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then

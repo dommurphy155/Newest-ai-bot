@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 Configuration Management for AI Trading Bot
-Direct configuration without .env files for Ubuntu 20.04 compatibility
+Production-ready configuration using environment variables only
+Optimized for Ubuntu 20.04 + Python 3.8.10
 """
 
 import os
@@ -27,48 +28,44 @@ class TradingConfig:
 
 @dataclass
 class APIConfig:
-    """API configuration - CONFIGURE YOUR CREDENTIALS HERE"""
-    # CONFIGURE THESE VALUES DIRECTLY:
-    oanda_api_key: str = "your_oanda_api_key_here"
-    oanda_account_id: str = "your_oanda_account_id_here"
-    telegram_bot_token: str = "your_telegram_bot_token_here"
-    telegram_chat_id: str = "your_telegram_chat_id_here"
-    hf_token: Optional[str] = None  # Optional Hugging Face token
-    oanda_environment: str = "practice"  # or "live"
+    """API configuration using environment variables"""
+    oanda_api_key: str
+    oanda_account_id: str
+    telegram_bot_token: str
+    telegram_chat_id: str
+    hf_token: Optional[str] = None
+    oanda_environment: str = "practice"
 
-    def __post_init__(self):
-        # Check if user has configured credentials
-        if (self.oanda_api_key == "your_oanda_api_key_here" or 
-            self.oanda_account_id == "your_oanda_account_id_here" or
-            self.telegram_bot_token == "your_telegram_bot_token_here" or
-            self.telegram_chat_id == "your_telegram_chat_id_here"):
+    def __init__(self):
+        # Get required environment variables
+        self.oanda_api_key = os.environ.get('OANDA_API_KEY', '')
+        self.oanda_account_id = os.environ.get('OANDA_ACCOUNT_ID', '')
+        self.telegram_bot_token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+        self.telegram_chat_id = os.environ.get('TELEGRAM_CHAT_ID', '')
+        self.hf_token = os.environ.get('HF_TOKEN')
+        self.oanda_environment = os.environ.get('OANDA_ENVIRONMENT', 'practice')
+        
+        # Validate required credentials
+        missing_vars = []
+        if not self.oanda_api_key:
+            missing_vars.append('OANDA_API_KEY')
+        if not self.oanda_account_id:
+            missing_vars.append('OANDA_ACCOUNT_ID')
+        if not self.telegram_bot_token:
+            missing_vars.append('TELEGRAM_BOT_TOKEN')
+        if not self.telegram_chat_id:
+            missing_vars.append('TELEGRAM_CHAT_ID')
             
-            print("🔧 CONFIGURATION REQUIRED:")
-            print("Edit config.py and replace the placeholder values with your real API credentials:")
-            print("- oanda_api_key: Get from OANDA account")
-            print("- oanda_account_id: Your OANDA account ID")
-            print("- telegram_bot_token: Create bot with @BotFather on Telegram")
-            print("- telegram_chat_id: Your Telegram chat ID")
-            print("\nAlternatively, export as environment variables:")
-            print("export OANDA_API_KEY='your_key'")
-            print("export OANDA_ACCOUNT_ID='your_account'")
-            print("export TELEGRAM_BOT_TOKEN='your_token'")
-            print("export TELEGRAM_CHAT_ID='your_chat_id'")
-            
-            # Try environment variables as fallback
-            env_key = os.environ.get('OANDA_API_KEY')
-            env_account = os.environ.get('OANDA_ACCOUNT_ID')
-            env_token = os.environ.get('TELEGRAM_BOT_TOKEN')
-            env_chat = os.environ.get('TELEGRAM_CHAT_ID')
-            
-            if env_key and env_account and env_token and env_chat:
-                self.oanda_api_key = env_key
-                self.oanda_account_id = env_account
-                self.telegram_bot_token = env_token
-                self.telegram_chat_id = env_chat
-                print("✅ Using environment variables")
-            else:
-                print("❌ Please configure your API credentials before running the bot")
+        if missing_vars:
+            raise EnvironmentError(
+                f"Missing required environment variables: {', '.join(missing_vars)}\n"
+                f"Please export these variables before running the bot:\n"
+                f"export OANDA_API_KEY='your_api_key'\n"
+                f"export OANDA_ACCOUNT_ID='your_account_id'\n"
+                f"export TELEGRAM_BOT_TOKEN='your_bot_token'\n"
+                f"export TELEGRAM_CHAT_ID='your_chat_id'\n"
+                f"export OANDA_ENVIRONMENT='practice'  # or 'live'"
+            )
 
 @dataclass
 class DatabaseConfig:
@@ -77,9 +74,9 @@ class DatabaseConfig:
     backup_interval: int = 3600  # 1 hour
     max_backups: int = 24
     
-    # Memory optimization settings - Using more memory for better performance
-    max_memory_mb: int = 512  # Allow up to 512MB for database operations
-    cache_size_kb: int = 8192  # 8MB cache (increased from 2MB)
+    # Memory optimization settings
+    max_memory_mb: int = 512
+    cache_size_kb: int = 8192
 
 @dataclass
 class LoggingConfig:
@@ -87,11 +84,11 @@ class LoggingConfig:
     log_level: str = "INFO"
     log_file: str = "logs/bot.log"
     error_file: str = "logs/error.log"
-    max_file_size: int = 20 * 1024 * 1024  # 20MB (increased from 5MB)
-    backup_count: int = 10  # Increased from 3 for better history
+    max_file_size: int = 20 * 1024 * 1024  # 20MB
+    backup_count: int = 10
 
 class Config:
-    """Main configuration class optimized for Ubuntu 20.04 + Python 3.8.10"""
+    """Main configuration class for production deployment"""
     def __init__(self):
         self.trading = TradingConfig()
         self.api = APIConfig()
@@ -116,21 +113,6 @@ class Config:
         if self.trading.min_confidence < 0.5 or self.trading.min_confidence > 1.0:
             errors.append("Min confidence must be between 0.5 and 1.0")
             
-        # Only validate credentials if they're not placeholder values
-        if (self.api.oanda_api_key != "your_oanda_api_key_here" and
-            self.api.oanda_account_id != "your_oanda_account_id_here" and
-            self.api.telegram_bot_token != "your_telegram_bot_token_here" and
-            self.api.telegram_chat_id != "your_telegram_chat_id_here"):
-            
-            if not self.api.oanda_api_key:
-                errors.append("OANDA_API_KEY is required")
-            if not self.api.oanda_account_id:
-                errors.append("OANDA_ACCOUNT_ID is required")
-            if not self.api.telegram_bot_token:
-                errors.append("TELEGRAM_BOT_TOKEN is required")
-            if not self.api.telegram_chat_id:
-                errors.append("TELEGRAM_CHAT_ID is required")
-                
         if errors:
             raise ValueError("Configuration errors: " + "; ".join(errors))
 

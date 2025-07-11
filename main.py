@@ -12,10 +12,20 @@ import signal
 from datetime import datetime, timedelta
 from pathlib import Path
 
-# Ensure Python 3.8+ compatibility
-if sys.version_info < (3, 8):
-    print("❌ Python 3.8+ required. Current version:", sys.version)
+# Ensure Python 3.8.10 compatibility for Ubuntu 20.04
+if sys.version_info < (3, 8, 10):
+    print(f"❌ Python 3.8.10+ required for Ubuntu 20.04. Current version: {sys.version}")
+    print("Please install Python 3.8.10 or higher")
     sys.exit(1)
+
+# Ubuntu 20.04 specific optimizations
+if sys.platform.startswith('linux'):
+    import platform
+    if '20.04' in platform.version() or 'Ubuntu' in platform.version():
+        # Set UTF-8 encoding for Ubuntu 20.04
+        os.environ.setdefault('PYTHONIOENCODING', 'utf-8')
+        os.environ.setdefault('LC_ALL', 'C.UTF-8')
+        os.environ.setdefault('LANG', 'C.UTF-8')
 
 # Create directories before logging setup
 Path("logs").mkdir(exist_ok=True)
