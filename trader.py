@@ -49,12 +49,39 @@ class AdvancedTrader:
         self.max_daily_risk = 0.05  # 5% max daily risk
         self.max_positions = 5
         
-        # ML-like features
-        self.price_history = {inst: deque(maxlen=100) for inst in self.instruments.keys()}
-        self.sentiment_history = deque(maxlen=50)
-        self.market_regime = 'NORMAL'  # NORMAL, VOLATILE, TRENDING
+        # Advanced ML and AI features for maximum profit
+        self.price_history = {inst: deque(maxlen=500) for inst in self.instruments.keys()}
+        self.volume_history = {inst: deque(maxlen=200) for inst in self.instruments.keys()}
+        self.sentiment_history = deque(maxlen=100)
+        self.market_regime = 'NORMAL'  # NORMAL, VOLATILE, TRENDING, BREAKOUT, REVERSAL
         
-        logger.info("Advanced Trader initialized with ML features")
+        # Profit maximization features
+        self.profit_acceleration_mode = True
+        self.dynamic_position_sizing = True
+        self.correlation_matrix = {}
+        self.volatility_forecasts = {}
+        self.momentum_signals = {}
+        self.breakout_detector = {}
+        
+        # Advanced risk management
+        self.position_correlations = {}
+        self.max_correlation_threshold = 0.7
+        self.dynamic_stop_loss = True
+        self.trailing_stops = {}
+        
+        # Performance optimization
+        self.profit_factor = 1.0
+        self.win_streak = 0
+        self.loss_streak = 0
+        self.consecutive_wins = 0
+        self.consecutive_losses = 0
+        
+        # Market scanning optimization
+        self.last_scan_time = datetime.now()
+        self.scan_frequency = 5  # seconds
+        self.fast_scan_mode = True
+        
+        logger.info("🚀 Advanced Trader v3.0 initialized with maximum profit features")
 
     async def get_balance(self) -> Optional[float]:
         """Get current account balance with caching"""
@@ -176,59 +203,91 @@ class AdvancedTrader:
             return 'NORMAL'
 
     async def calculate_advanced_signals(self, instrument: str, price_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Calculate advanced trading signals"""
+        """Calculate ultra-advanced trading signals for maximum profit"""
         try:
-            # Get news sentiment
+            # Get enhanced sentiment
             sentiment = await self.scraper.get_sentiment() if self.scraper else 0.5
             self.sentiment_history.append(sentiment)
             
-            # Technical signals
+            # Multi-timeframe analysis
+            signals = await self.multi_timeframe_analysis(instrument, price_data)
+            
+            # Technical signals with advanced weighting
             tech_score = 0.0
             
-            # Trend following
-            if price_data['trend'] == 'UP':
-                tech_score += 0.3
-            elif price_data['trend'] == 'DOWN':
-                tech_score -= 0.3
+            # Advanced trend analysis
+            trend_strength = self.calculate_trend_strength(instrument, price_data)
+            if price_data['trend'] == 'UP' and trend_strength > 0.6:
+                tech_score += 0.4 * trend_strength
+            elif price_data['trend'] == 'DOWN' and trend_strength > 0.6:
+                tech_score -= 0.4 * trend_strength
             
-            # Momentum
-            if price_data['momentum'] > 0.001:
-                tech_score += 0.2
-            elif price_data['momentum'] < -0.001:
-                tech_score -= 0.2
+            # Enhanced momentum with acceleration
+            momentum_score = self.calculate_momentum_score(instrument, price_data)
+            tech_score += momentum_score * 0.3
             
-            # Volatility filter
-            if price_data['volatility'] > self.instruments[instrument]['volatility_threshold']:
-                tech_score *= 0.5  # Reduce signal strength in high volatility
+            # Breakout detection
+            breakout_signal = self.detect_breakout(instrument, price_data)
+            tech_score += breakout_signal * 0.25
             
-            # Sentiment influence
-            sentiment_influence = (sentiment - 0.5) * 0.4
+            # Volume confirmation
+            volume_confirmation = self.analyze_volume_confirmation(instrument, price_data)
+            tech_score *= volume_confirmation
             
-            # Combine signals
-            total_score = tech_score + sentiment_influence
+            # Market regime adjustment
+            regime_multiplier = self.get_regime_multiplier()
+            tech_score *= regime_multiplier
             
-            # Determine signal
-            if total_score > 0.4:
-                signal = 'BUY'
-                confidence = min(abs(total_score), 0.95)
-            elif total_score < -0.4:
-                signal = 'SELL'
-                confidence = min(abs(total_score), 0.95)
-            else:
-                signal = 'HOLD'
-                confidence = 0.5
+            # Volatility optimization
+            volatility_factor = self.calculate_volatility_factor(instrument, price_data)
+            tech_score *= volatility_factor
+            
+            # Sentiment with trend confirmation
+            sentiment_influence = self.calculate_sentiment_influence(sentiment, price_data)
+            
+            # Correlation filter
+            correlation_penalty = await self.calculate_correlation_penalty(instrument)
+            
+            # News impact analysis
+            news_impact = await self.analyze_news_impact(instrument)
+            
+            # Combine all signals with advanced weighting
+            total_score = (
+                tech_score * 0.45 +
+                sentiment_influence * 0.25 +
+                signals.get('multi_timeframe_score', 0) * 0.2 +
+                news_impact * 0.1
+            ) * (1 - correlation_penalty)
+            
+            # Profit acceleration mode
+            if self.profit_acceleration_mode and self.consecutive_wins >= 3:
+                total_score *= 1.2  # Increase signal strength on win streaks
+            
+            # Dynamic confidence calculation
+            confidence = self.calculate_dynamic_confidence(total_score, instrument, price_data)
+            
+            # Signal determination with advanced logic
+            signal, final_confidence = self.determine_final_signal(total_score, confidence)
             
             return {
                 'signal': signal,
-                'confidence': confidence,
+                'confidence': final_confidence,
                 'tech_score': tech_score,
                 'sentiment_score': sentiment_influence,
                 'total_score': total_score,
-                'market_regime': self.market_regime
+                'market_regime': self.market_regime,
+                'trend_strength': trend_strength,
+                'momentum_score': momentum_score,
+                'breakout_signal': breakout_signal,
+                'volume_confirmation': volume_confirmation,
+                'volatility_factor': volatility_factor,
+                'correlation_penalty': correlation_penalty,
+                'news_impact': news_impact,
+                'multi_timeframe': signals
             }
             
         except Exception as e:
-            logger.error(f"Error calculating signals for {instrument}: {e}")
+            logger.error(f"Error calculating advanced signals for {instrument}: {e}")
             return {'signal': 'HOLD', 'confidence': 0.0}
 
     async def calculate_optimal_position_size(self, instrument: str, signal: str, confidence: float) -> int:
@@ -321,22 +380,30 @@ class AdvancedTrader:
             response = self.api.request(r)
             
             if 'orderFillTransaction' in response:
+                # Get fill price from response
+                fill_price = float(response['orderFillTransaction']['price'])
+                
                 trade_info = {
                     'timestamp': datetime.now().isoformat(),
                     'instrument': instrument,
                     'side': side,
                     'units': abs(units),
-                    'entry_price': current_price,
+                    'entry_price': fill_price,
                     'stop_loss': stop_loss,
                     'take_profit': take_profit,
                     'confidence': analysis.get('confidence', 0.5),
-                    'market_regime': self.market_regime
+                    'market_regime': self.market_regime,
+                    'expected_profit': abs(take_profit - fill_price) * abs(units),
+                    'risk_amount': abs(fill_price - stop_loss) * abs(units)
                 }
                 
                 self.trade_history.append(trade_info)
                 self.trade_count += 1
                 
-                logger.info(f"Trade executed: {instrument} {side} {abs(units)} units @ {current_price:.5f}")
+                # Update profit acceleration tracking
+                self.update_performance_tracking()
+                
+                logger.info(f"🎯 Trade executed: {instrument} {side} {abs(units)} units @ {fill_price:.5f} | Confidence: {analysis.get('confidence', 0.5):.2f}")
                 return True
             else:
                 logger.warning(f"Order not filled: {response}")
@@ -440,18 +507,280 @@ class AdvancedTrader:
                     
                     await asyncio.sleep(1)
                 
-                # Adaptive sleep based on market regime
+                # Ultra-fast adaptive sleep for maximum profit
                 sleep_time = {
-                    'VOLATILE': 15,
-                    'TRENDING': 30,
-                    'NORMAL': 45
-                }.get(self.market_regime, 30)
+                    'VOLATILE': 3,
+                    'TRENDING': 5,
+                    'BREAKOUT': 2,
+                    'REVERSAL': 4,
+                    'NORMAL': 5
+                }.get(self.market_regime, 5)
+                
+                # Further optimize based on profit acceleration mode
+                if self.profit_acceleration_mode and self.consecutive_wins >= 2:
+                    sleep_time = max(2, sleep_time - 1)
                 
                 await asyncio.sleep(sleep_time)
                 
             except Exception as e:
                 logger.error(f"Error in trading loop: {e}")
                 await asyncio.sleep(30)
+
+    # Advanced profit maximization methods
+    
+    async def multi_timeframe_analysis(self, instrument: str, price_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Multi-timeframe analysis for stronger signals"""
+        try:
+            # Simulate different timeframes
+            short_term_score = price_data.get('momentum', 0) * 2
+            medium_term_score = (price_data.get('sma_20', 0) - price_data.get('sma_50', 0)) / price_data.get('mid', 1)
+            long_term_score = price_data.get('trend', 'SIDEWAYS')
+            
+            # Weight the scores
+            if long_term_score == 'UP':
+                long_term_value = 0.3
+            elif long_term_score == 'DOWN':
+                long_term_value = -0.3
+            else:
+                long_term_value = 0.0
+            
+            combined_score = (short_term_score * 0.5 + medium_term_score * 0.3 + long_term_value * 0.2)
+            
+            return {
+                'multi_timeframe_score': combined_score,
+                'short_term': short_term_score,
+                'medium_term': medium_term_score,
+                'long_term': long_term_value
+            }
+        except Exception as e:
+            logger.error(f"Error in multi-timeframe analysis: {e}")
+            return {'multi_timeframe_score': 0.0}
+    
+    def calculate_trend_strength(self, instrument: str, price_data: Dict[str, Any]) -> float:
+        """Calculate trend strength for better signal quality"""
+        try:
+            sma_20 = price_data.get('sma_20', 0)
+            sma_50 = price_data.get('sma_50', 0)
+            current_price = price_data.get('mid', 0)
+            
+            if sma_20 == 0 or sma_50 == 0 or current_price == 0:
+                return 0.0
+            
+            # Calculate trend strength based on price position relative to MAs
+            trend_strength = abs((current_price - sma_50) / sma_50)
+            
+            # Confirm with moving average alignment
+            if (current_price > sma_20 > sma_50) or (current_price < sma_20 < sma_50):
+                trend_strength *= 1.5
+            
+            return min(trend_strength, 1.0)
+        except Exception as e:
+            logger.error(f"Error calculating trend strength: {e}")
+            return 0.0
+    
+    def calculate_momentum_score(self, instrument: str, price_data: Dict[str, Any]) -> float:
+        """Calculate enhanced momentum score"""
+        try:
+            momentum = price_data.get('momentum', 0)
+            volatility = price_data.get('volatility', 0.001)
+            
+            # Normalize momentum by volatility
+            if volatility > 0:
+                normalized_momentum = momentum / volatility
+            else:
+                normalized_momentum = 0
+            
+            # Apply momentum threshold
+            if abs(normalized_momentum) > 2.0:
+                return np.sign(normalized_momentum) * 0.8
+            elif abs(normalized_momentum) > 1.0:
+                return np.sign(normalized_momentum) * 0.4
+            else:
+                return normalized_momentum * 0.2
+        except Exception as e:
+            logger.error(f"Error calculating momentum score: {e}")
+            return 0.0
+    
+    def detect_breakout(self, instrument: str, price_data: Dict[str, Any]) -> float:
+        """Detect breakout patterns for high-profit opportunities"""
+        try:
+            current_price = price_data.get('mid', 0)
+            sma_20 = price_data.get('sma_20', 0)
+            volatility = price_data.get('volatility', 0.001)
+            
+            if current_price == 0 or sma_20 == 0:
+                return 0.0
+            
+            # Calculate price deviation from moving average
+            deviation = abs(current_price - sma_20) / sma_20
+            
+            # Breakout detection based on volatility expansion
+            if deviation > volatility * 3:
+                return np.sign(current_price - sma_20) * 0.6
+            elif deviation > volatility * 2:
+                return np.sign(current_price - sma_20) * 0.3
+            else:
+                return 0.0
+        except Exception as e:
+            logger.error(f"Error detecting breakout: {e}")
+            return 0.0
+    
+    def analyze_volume_confirmation(self, instrument: str, price_data: Dict[str, Any]) -> float:
+        """Analyze volume confirmation (simulated for forex)"""
+        try:
+            # Since forex doesn't have traditional volume, use spread as proxy
+            spread = price_data.get('spread', 0.001)
+            max_spread = self.instruments.get(instrument, {}).get('max_spread', 0.001)
+            
+            # Tighter spreads indicate better liquidity/volume
+            volume_factor = 1.0 - (spread / max_spread)
+            return max(0.5, volume_factor)  # Minimum 0.5 multiplier
+        except Exception as e:
+            logger.error(f"Error analyzing volume confirmation: {e}")
+            return 1.0
+    
+    def get_regime_multiplier(self) -> float:
+        """Get multiplier based on market regime"""
+        multipliers = {
+            'TRENDING': 1.3,
+            'BREAKOUT': 1.5,
+            'VOLATILE': 0.7,
+            'REVERSAL': 1.2,
+            'NORMAL': 1.0
+        }
+        return multipliers.get(self.market_regime, 1.0)
+    
+    def calculate_volatility_factor(self, instrument: str, price_data: Dict[str, Any]) -> float:
+        """Calculate volatility adjustment factor"""
+        try:
+            volatility = price_data.get('volatility', 0.001)
+            threshold = self.instruments.get(instrument, {}).get('volatility_threshold', 0.002)
+            
+            if volatility > threshold * 2:
+                return 0.5  # Reduce signal in extreme volatility
+            elif volatility > threshold:
+                return 0.7  # Moderate reduction
+            else:
+                return 1.2  # Boost signal in low volatility
+        except Exception as e:
+            logger.error(f"Error calculating volatility factor: {e}")
+            return 1.0
+    
+    def calculate_sentiment_influence(self, sentiment: float, price_data: Dict[str, Any]) -> float:
+        """Calculate enhanced sentiment influence"""
+        try:
+            # Base sentiment influence
+            base_influence = (sentiment - 0.5) * 0.6
+            
+            # Amplify if sentiment aligns with technical trend
+            trend = price_data.get('trend', 'SIDEWAYS')
+            if (sentiment > 0.6 and trend == 'UP') or (sentiment < 0.4 and trend == 'DOWN'):
+                base_influence *= 1.5
+            
+            return base_influence
+        except Exception as e:
+            logger.error(f"Error calculating sentiment influence: {e}")
+            return 0.0
+    
+    async def calculate_correlation_penalty(self, instrument: str) -> float:
+        """Calculate correlation penalty to avoid overexposure"""
+        try:
+            current_exposure = await self.get_current_exposure()
+            if not current_exposure:
+                return 0.0
+            
+            # Simple correlation simulation (in reality, use historical correlation)
+            correlation_pairs = {
+                'EUR_USD': ['GBP_USD', 'AUD_USD'],
+                'GBP_USD': ['EUR_USD', 'AUD_USD'],
+                'USD_JPY': ['USD_CHF', 'USD_CAD'],
+                'USD_CHF': ['USD_JPY', 'USD_CAD'],
+                'AUD_USD': ['EUR_USD', 'GBP_USD', 'NZD_USD'],
+                'USD_CAD': ['USD_JPY', 'USD_CHF'],
+                'NZD_USD': ['AUD_USD']
+            }
+            
+            penalty = 0.0
+            related_instruments = correlation_pairs.get(instrument, [])
+            
+            for related in related_instruments:
+                if related in current_exposure:
+                    penalty += 0.15  # 15% penalty per correlated position
+            
+            return min(penalty, 0.5)  # Max 50% penalty
+        except Exception as e:
+            logger.error(f"Error calculating correlation penalty: {e}")
+            return 0.0
+    
+    async def analyze_news_impact(self, instrument: str) -> float:
+        """Analyze news impact on specific instrument"""
+        try:
+            if not self.scraper:
+                return 0.0
+            
+            # Get sentiment trend
+            trend = await self.scraper.get_sentiment_trend()
+            sentiment = await self.scraper.get_sentiment()
+            
+            impact_score = 0.0
+            
+            if trend == 'IMPROVING' and sentiment > 0.6:
+                impact_score = 0.3
+            elif trend == 'DECLINING' and sentiment < 0.4:
+                impact_score = -0.3
+            elif trend == 'STABLE':
+                impact_score = 0.0
+            
+            return impact_score
+        except Exception as e:
+            logger.error(f"Error analyzing news impact: {e}")
+            return 0.0
+    
+    def calculate_dynamic_confidence(self, total_score: float, instrument: str, price_data: Dict[str, Any]) -> float:
+        """Calculate dynamic confidence based on multiple factors"""
+        try:
+            base_confidence = min(abs(total_score), 0.95)
+            
+            # Adjust based on recent performance
+            if self.win_streak >= 3:
+                base_confidence *= 1.1
+            elif self.loss_streak >= 2:
+                base_confidence *= 0.9
+            
+            # Adjust based on market conditions
+            volatility = price_data.get('volatility', 0.001)
+            if volatility < self.instruments.get(instrument, {}).get('volatility_threshold', 0.002):
+                base_confidence *= 1.15  # Higher confidence in stable markets
+            
+            return min(base_confidence, 0.98)
+        except Exception as e:
+            logger.error(f"Error calculating dynamic confidence: {e}")
+            return 0.5
+    
+    def determine_final_signal(self, total_score: float, confidence: float) -> tuple:
+        """Determine final trading signal with advanced logic"""
+        try:
+            # Dynamic thresholds based on market regime and confidence
+            buy_threshold = 0.35 if self.market_regime in ['TRENDING', 'BREAKOUT'] else 0.45
+            sell_threshold = -buy_threshold
+            
+            # Adjust thresholds based on confidence
+            if confidence > 0.8:
+                buy_threshold *= 0.8
+                sell_threshold *= 0.8
+            elif confidence < 0.6:
+                buy_threshold *= 1.2
+                sell_threshold *= 1.2
+            
+            if total_score > buy_threshold:
+                return 'BUY', confidence
+            elif total_score < sell_threshold:
+                return 'SELL', confidence
+            else:
+                return 'HOLD', 0.5
+        except Exception as e:
+            logger.error(f"Error determining final signal: {e}")
+            return 'HOLD', 0.0
 
     async def get_detailed_status(self) -> Dict[str, Any]:
         """Get comprehensive trading status"""
@@ -476,25 +805,82 @@ class AdvancedTrader:
             'daily_trades': len([t for t in self.trade_history 
                                if datetime.fromisoformat(t['timestamp']).date() == datetime.now().date()]),
             'instruments': list(self.instruments.keys()),
-            'exposure': exposure
+            'exposure': exposure,
+            'profit_factor': self.profit_factor,
+            'consecutive_wins': self.consecutive_wins,
+            'consecutive_losses': self.consecutive_losses,
+            'scan_frequency': self.scan_frequency,
+            'profit_acceleration_mode': self.profit_acceleration_mode
         }
 
+    def update_performance_tracking(self):
+        """Update performance tracking metrics"""
+        try:
+            # This would be called after trade completion to update streaks
+            # For now, we'll simulate based on recent trades
+            if len(self.trade_history) >= 2:
+                recent_trades = list(self.trade_history)[-5:]  # Last 5 trades
+                wins = sum(1 for trade in recent_trades if trade.get('expected_profit', 0) > 0)
+                
+                if wins > len(recent_trades) / 2:
+                    self.win_streak += 1
+                    self.loss_streak = 0
+                    self.consecutive_wins += 1
+                    self.consecutive_losses = 0
+                else:
+                    self.loss_streak += 1
+                    self.win_streak = 0
+                    self.consecutive_losses += 1
+                    self.consecutive_wins = 0
+                
+                # Update profit factor
+                self.profit_factor = max(0.5, min(2.0, 1.0 + (self.win_streak * 0.1) - (self.loss_streak * 0.05)))
+                
+        except Exception as e:
+            logger.error(f"Error updating performance tracking: {e}")
+    
+    async def get_account_info(self) -> Dict[str, Any]:
+        """Get detailed account information"""
+        try:
+            r = accounts.AccountDetails(accountID=self.account_id)
+            response = self.api.request(r)
+            return response.get('account', {})
+        except Exception as e:
+            logger.error(f"Error getting account info: {e}")
+            return {}
+    
+    async def get_open_positions(self) -> List[Dict[str, Any]]:
+        """Get all open positions"""
+        try:
+            r = accounts.AccountDetails(accountID=self.account_id)
+            response = self.api.request(r)
+            return response.get('account', {}).get('positions', [])
+        except Exception as e:
+            logger.error(f"Error getting open positions: {e}")
+            return []
+    
+    async def get_status(self) -> Dict[str, Any]:
+        """Get trader status for the bot"""
+        return await self.get_detailed_status()
+
     async def run(self):
-        """Run the advanced trader"""
+        """Run the advanced trader with maximum profit optimization"""
         try:
             self.running = True
-            logger.info("Advanced Trader started with ML features")
+            logger.info("🚀 Advanced Trader v3.0 started with MAXIMUM PROFIT MODE")
             
             # Initial setup
             balance = await self.get_balance()
             if balance is None:
-                logger.error("Failed to get initial balance")
+                logger.error("❌ Failed to get initial balance")
                 return
             
-            logger.info(f"Initial balance: ${balance:.2f}")
-            logger.info(f"Market regime: {self.market_regime}")
+            logger.info(f"💰 Initial balance: ${balance:.2f}")
+            logger.info(f"📊 Market regime: {self.market_regime}")
+            logger.info(f"⚡ Profit acceleration: {'ENABLED' if self.profit_acceleration_mode else 'DISABLED'}")
+            logger.info(f"🎯 Scan frequency: {self.scan_frequency}s")
             
-            # Start trading loop
+            # Start ultra-fast trading loop
             await self.trading_loop()
             
         except Exception as e:
