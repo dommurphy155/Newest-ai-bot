@@ -27,7 +27,7 @@ vaderSentiment==3.3.2
 yfinance==0.1.96
 
 # Crypto Support - Lightweight
-ccxt==2.9.54
+ccxt==4.0.44
 
 # Time and Date - Python 3.8 Compatible
 python-dateutil==2.8.2
