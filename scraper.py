@@ -81,4 +81,3 @@ class EnhancedNewsScraper:
         
         # Sentiment history for trending analysis
         self.sentiment_history = deque(maxlen=100)
-        self.

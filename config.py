@@ -4,12 +4,11 @@ Configuration Management for AI Trading Bot
 """
 
 import os
-import logging
 from typing import Dict, List, Optional
 from dataclasses import dataclass
 from dotenv import load_dotenv
 
-# Load environment variables
+# Load environment variables from .env file if present
 load_dotenv()
 
 @dataclass
@@ -24,7 +23,7 @@ class TradingConfig:
     max_daily_trades: int = 50
     max_open_positions: int = 5
     instruments: List[str] = None
-    
+
     def __post_init__(self):
         if self.instruments is None:
             self.instruments = ['EUR_USD', 'GBP_USD', 'USD_JPY', 'USD_CAD', 'AUD_USD', 'EUR_GBP']
@@ -38,7 +37,7 @@ class APIConfig:
     telegram_chat_id: str
     hf_token: Optional[str] = None
     oanda_environment: str = "practice"  # or "live"
-    
+
     def __post_init__(self):
         if not all([self.oanda_api_key, self.oanda_account_id, 
                    self.telegram_bot_token, self.telegram_chat_id]):
@@ -62,7 +61,6 @@ class LoggingConfig:
 
 class Config:
     """Main configuration class"""
-    
     def __init__(self):
         self.trading = TradingConfig()
         self.api = APIConfig(
@@ -75,48 +73,43 @@ class Config:
         )
         self.database = DatabaseConfig()
         self.logging = LoggingConfig()
-        
-        # Validate configuration
+        self._ensure_paths()
         self._validate()
-    
+
+    def _ensure_paths(self):
+        """Ensure required directories exist for logs and database."""
+        os.makedirs(os.path.dirname(self.database.db_path), exist_ok=True)
+        os.makedirs(os.path.dirname(self.logging.log_file), exist_ok=True)
+        os.makedirs(os.path.dirname(self.logging.error_file), exist_ok=True)
+
     def _validate(self):
         """Validate configuration parameters"""
         errors = []
-        
-        # Validate trading parameters
         if self.trading.risk_per_trade <= 0 or self.trading.risk_per_trade > 0.1:
             errors.append("Risk per trade must be between 0 and 0.1 (10%)")
-        
         if self.trading.max_spread <= 0:
             errors.append("Max spread must be positive")
-        
         if self.trading.min_confidence < 0.5 or self.trading.min_confidence > 1.0:
             errors.append("Min confidence must be between 0.5 and 1.0")
-        
-        # Validate API config
         if not self.api.oanda_api_key:
             errors.append("OANDA_API_KEY is required")
-        
         if not self.api.oanda_account_id:
             errors.append("OANDA_ACCOUNT_ID is required")
-        
         if not self.api.telegram_bot_token:
             errors.append("TELEGRAM_BOT_TOKEN is required")
-        
         if not self.api.telegram_chat_id:
             errors.append("TELEGRAM_CHAT_ID is required")
-        
         if errors:
             raise ValueError("Configuration errors: " + "; ".join(errors))
-    
+
     def get_oanda_url(self) -> str:
         """Get OANDA API URL based on environment"""
         if self.api.oanda_environment == "live":
             return "https://api-fxtrade.oanda.com"
         return "https://api-fxpractice.oanda.com"
-    
+
     def to_dict(self) -> Dict:
-        """Convert config to dictionary"""
+        """Convert config to dictionary (excluding sensitive info)"""
         return {
             'trading': self.trading.__dict__,
             'api': {k: v for k, v in self.api.__dict__.items() 
