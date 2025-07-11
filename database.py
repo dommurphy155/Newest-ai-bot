@@ -174,6 +174,32 @@ class Database:
                 params.append(end_date)
             query += " ORDER BY timestamp DESC LIMIT ?"
             params.append(limit)
+            
+            async with aiosqlite.connect(self.db_path) as db:
+                cursor = await db.execute(query, params)
+                rows = await cursor.fetchall()
+                
+                trades = []
+                for row in rows:
+                    trade = Trade(
+                        id=row[0],
+                        instrument=row[1],
+                        side=row[2],
+                        units=row[3],
+                        price=row[4],
+                        timestamp=datetime.fromisoformat(row[5]) if row[5] else datetime.now(),
+                        pnl=row[6],
+                        commission=row[7],
+                        confidence=row[8],
+                        sentiment=row[9],
+                        status=row[10]
+                    )
+                    trades.append(trade)
+                
+                return trades
+        except Exception as e:
+            logger.error(f"Error getting trades: {e}")
+            return []
 
     async def save_balance(self, balance: float, trade_count: int = 0, daily_pnl: float = 0.0):
         """Save account balance."""
