@@ -1,15 +1,14 @@
 print("staring main.py")
 from bot import run main.py
 #!/usr/bin/env python3
-<<<<<<< HEAD
+
 AI Trading Bot - Main Entry Point
-=======
-"""
+
 AI Trading Bot - Enhanced Main Entry Point
->>>>>>> 882435ae4b6e5432be719c1c26c2a5f930b9b94f
+
 Compatible with Python 3.8+ and Ubuntu 20.04
 High-frequency trading with advanced ML models
-"""
+
 
 import os
 import sys
