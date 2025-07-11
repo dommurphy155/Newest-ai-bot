@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Advanced Technical Analysis for AI Trading Bot
+Lightweight replacement for TA-Lib - optimized for Ubuntu 20.04 Python 3.8
 """
 
 import numpy as np
@@ -35,6 +36,9 @@ class TechnicalIndicators:
     momentum: float = 0.0
     roc: float = 0.0
     cci: float = 0.0
+    obv: float = 0.0  # On Balance Volume
+    mfi: float = 50.0  # Money Flow Index
+    vwap: float = 0.0  # Volume Weighted Average Price
 
 @dataclass
 class MarketSignal:
@@ -47,7 +51,7 @@ class MarketSignal:
     timestamp: datetime
 
 class TechnicalAnalyzer:
-    """Advanced technical analysis engine"""
+    """Advanced technical analysis engine - lightweight TA-Lib replacement"""
     
     def __init__(self):
         self.price_history: Dict[str, List[Dict]] = {}
@@ -63,7 +67,8 @@ class TechnicalAnalyzer:
             'bid': price_data.get('bid', 0),
             'ask': price_data.get('ask', 0),
             'mid': (price_data.get('bid', 0) + price_data.get('ask', 0)) / 2,
-            'spread': price_data.get('ask', 0) - price_data.get('bid', 0)
+            'spread': price_data.get('ask', 0) - price_data.get('bid', 0),
+            'volume': price_data.get('volume', 1000)  # Default volume for forex
         })
         
         # Keep only recent data
@@ -161,6 +166,92 @@ class TechnicalAnalyzer:
         cci = (typical_price - sma_tp) / (0.015 * mean_deviation)
         return cci
     
+    def calculate_obv(self, close: pd.Series, volume: pd.Series) -> pd.Series:
+        """Calculate On Balance Volume"""
+        obv = pd.Series(index=close.index, dtype=float)
+        obv.iloc[0] = volume.iloc[0]
+        
+        for i in range(1, len(close)):
+            if close.iloc[i] > close.iloc[i-1]:
+                obv.iloc[i] = obv.iloc[i-1] + volume.iloc[i]
+            elif close.iloc[i] < close.iloc[i-1]:
+                obv.iloc[i] = obv.iloc[i-1] - volume.iloc[i]
+            else:
+                obv.iloc[i] = obv.iloc[i-1]
+        
+        return obv
+    
+    def calculate_mfi(self, high: pd.Series, low: pd.Series, close: pd.Series, volume: pd.Series, period: int = 14) -> pd.Series:
+        """Calculate Money Flow Index"""
+        typical_price = (high + low + close) / 3
+        money_flow = typical_price * volume
+        
+        positive_flow = pd.Series(index=close.index, dtype=float)
+        negative_flow = pd.Series(index=close.index, dtype=float)
+        
+        for i in range(1, len(typical_price)):
+            if typical_price.iloc[i] > typical_price.iloc[i-1]:
+                positive_flow.iloc[i] = money_flow.iloc[i]
+                negative_flow.iloc[i] = 0
+            elif typical_price.iloc[i] < typical_price.iloc[i-1]:
+                negative_flow.iloc[i] = money_flow.iloc[i]
+                positive_flow.iloc[i] = 0
+            else:
+                positive_flow.iloc[i] = 0
+                negative_flow.iloc[i] = 0
+        
+        positive_mf = positive_flow.rolling(window=period).sum()
+        negative_mf = negative_flow.rolling(window=period).sum()
+        
+        mfr = positive_mf / negative_mf
+        mfi = 100 - (100 / (1 + mfr))
+        
+        return mfi
+    
+    def calculate_vwap(self, high: pd.Series, low: pd.Series, close: pd.Series, volume: pd.Series) -> pd.Series:
+        """Calculate Volume Weighted Average Price"""
+        typical_price = (high + low + close) / 3
+        vwap = (typical_price * volume).cumsum() / volume.cumsum()
+        return vwap
+    
+    def calculate_ichimoku(self, high: pd.Series, low: pd.Series, close: pd.Series) -> Dict[str, pd.Series]:
+        """Calculate Ichimoku Cloud components"""
+        # Tenkan Sen (Conversion Line)
+        tenkan_sen = (high.rolling(9).max() + low.rolling(9).min()) / 2
+        
+        # Kijun Sen (Base Line)
+        kijun_sen = (high.rolling(26).max() + low.rolling(26).min()) / 2
+        
+        # Senkou Span A (Leading Span A)
+        senkou_span_a = ((tenkan_sen + kijun_sen) / 2).shift(26)
+        
+        # Senkou Span B (Leading Span B)
+        senkou_span_b = ((high.rolling(52).max() + low.rolling(52).min()) / 2).shift(26)
+        
+        # Chikou Span (Lagging Span)
+        chikou_span = close.shift(-26)
+        
+        return {
+            'tenkan_sen': tenkan_sen,
+            'kijun_sen': kijun_sen,
+            'senkou_span_a': senkou_span_a,
+            'senkou_span_b': senkou_span_b,
+            'chikou_span': chikou_span
+        }
+    
+    def calculate_fibonacci_retracements(self, high: float, low: float) -> Dict[str, float]:
+        """Calculate Fibonacci retracement levels"""
+        diff = high - low
+        return {
+            'level_0': high,
+            'level_236': high - 0.236 * diff,
+            'level_382': high - 0.382 * diff,
+            'level_500': high - 0.500 * diff,
+            'level_618': high - 0.618 * diff,
+            'level_786': high - 0.786 * diff,
+            'level_100': low
+        }
+    
     def calculate_all_indicators(self, instrument: str) -> Optional[TechnicalIndicators]:
         """Calculate all technical indicators for an instrument"""
         df = self.get_price_dataframe(instrument)
@@ -172,6 +263,7 @@ class TechnicalAnalyzer:
             close = df['mid']
             high = df['ask']  # Approximate high with ask
             low = df['bid']   # Approximate low with bid
+            volume = df['volume']
             
             # Calculate all indicators
             rsi = self.calculate_rsi(close)
@@ -188,6 +280,9 @@ class TechnicalAnalyzer:
             momentum = self.calculate_momentum(close).iloc[-1]
             roc = self.calculate_roc(close).iloc[-1]
             cci = self.calculate_cci(high, low, close).iloc[-1]
+            obv = self.calculate_obv(close, volume).iloc[-1]
+            mfi = self.calculate_mfi(high, low, close, volume).iloc[-1]
+            vwap = self.calculate_vwap(high, low, close, volume).iloc[-1]
 
             return TechnicalIndicators(
                 rsi=rsi.iloc[-1],
@@ -208,8 +303,136 @@ class TechnicalAnalyzer:
                 williams_r=williams_r,
                 momentum=momentum,
                 roc=roc,
-                cci=cci
+                cci=cci,
+                obv=obv,
+                mfi=mfi,
+                vwap=vwap
             )
         except Exception as e:
             logger.error(f"Error calculating indicators for {instrument}: {e}")
             return None
+    
+    def generate_signals(self, indicators: TechnicalIndicators, price: float) -> MarketSignal:
+        """Generate trading signals based on technical indicators"""
+        signals = []
+        reasoning = []
+        confidence = 0.0
+        
+        # RSI signals
+        if indicators.rsi < 30:
+            signals.append(1)  # Oversold - buy signal
+            reasoning.append("RSI oversold")
+            confidence += 0.15
+        elif indicators.rsi > 70:
+            signals.append(-1)  # Overbought - sell signal
+            reasoning.append("RSI overbought")
+            confidence += 0.15
+        
+        # MACD signals
+        if indicators.macd > indicators.macd_signal and indicators.macd_histogram > 0:
+            signals.append(1)
+            reasoning.append("MACD bullish")
+            confidence += 0.2
+        elif indicators.macd < indicators.macd_signal and indicators.macd_histogram < 0:
+            signals.append(-1)
+            reasoning.append("MACD bearish")
+            confidence += 0.2
+        
+        # Bollinger Bands signals
+        if price <= indicators.bollinger_lower:
+            signals.append(1)
+            reasoning.append("Price at lower Bollinger Band")
+            confidence += 0.1
+        elif price >= indicators.bollinger_upper:
+            signals.append(-1)
+            reasoning.append("Price at upper Bollinger Band")
+            confidence += 0.1
+        
+        # Moving average signals
+        if indicators.sma_20 > indicators.sma_50 and price > indicators.sma_20:
+            signals.append(1)
+            reasoning.append("Price above rising MA")
+            confidence += 0.15
+        elif indicators.sma_20 < indicators.sma_50 and price < indicators.sma_20:
+            signals.append(-1)
+            reasoning.append("Price below falling MA")
+            confidence += 0.15
+        
+        # Stochastic signals
+        if indicators.stoch_k < 20 and indicators.stoch_d < 20:
+            signals.append(1)
+            reasoning.append("Stochastic oversold")
+            confidence += 0.1
+        elif indicators.stoch_k > 80 and indicators.stoch_d > 80:
+            signals.append(-1)
+            reasoning.append("Stochastic overbought")
+            confidence += 0.1
+        
+        # Final signal determination
+        if not signals:
+            signal = "HOLD"
+            final_confidence = 0.0
+        else:
+            signal_sum = sum(signals)
+            if signal_sum > 0:
+                signal = "BUY"
+            elif signal_sum < 0:
+                signal = "SELL"
+            else:
+                signal = "HOLD"
+            
+            final_confidence = min(confidence, 1.0)
+        
+        strength = abs(sum(signals)) / max(len(signals), 1) if signals else 0
+        
+        return MarketSignal(
+            signal=signal,
+            confidence=final_confidence,
+            strength=strength,
+            reasoning=reasoning,
+            indicators=indicators,
+            timestamp=datetime.now()
+        )
+    
+    def analyze_trend(self, instrument: str) -> str:
+        """Analyze price trend"""
+        df = self.get_price_dataframe(instrument)
+        if df is None or len(df) < 20:
+            return "UNKNOWN"
+        
+        prices = df['mid']
+        sma_short = prices.rolling(10).mean().iloc[-1]
+        sma_medium = prices.rolling(20).mean().iloc[-1]
+        sma_long = prices.rolling(50).mean().iloc[-1]
+        
+        if sma_short > sma_medium > sma_long:
+            return "UPTREND"
+        elif sma_short < sma_medium < sma_long:
+            return "DOWNTREND"
+        else:
+            return "SIDEWAYS"
+    
+    def calculate_support_resistance(self, instrument: str, window: int = 20) -> Dict[str, float]:
+        """Calculate support and resistance levels"""
+        df = self.get_price_dataframe(instrument)
+        if df is None or len(df) < window * 2:
+            return {}
+        
+        prices = df['mid'].values
+        highs = []
+        lows = []
+        
+        for i in range(window, len(prices) - window):
+            if prices[i] == max(prices[i-window:i+window]):
+                highs.append(prices[i])
+            if prices[i] == min(prices[i-window:i+window]):
+                lows.append(prices[i])
+        
+        if not highs or not lows:
+            return {}
+        
+        return {
+            'resistance': np.mean(highs),
+            'support': np.mean(lows),
+            'current_price': prices[-1]
+        }

@@ -23,7 +23,7 @@ import ccxt
 
 logger = logging.getLogger(__name__)
 
-class AdvancedMarketIntelligence:
+class EnhancedNewsScraper:
     def __init__(self):
         self.session = None
         self.running = False
