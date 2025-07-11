@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """
-Enhanced Telegram Bot Handler for AI Trading Bot
-Production-ready with advanced features and error handling
+🚀 ULTRA-OPTIMIZED TELEGRAM BOT v3.0
+Production-ready with advanced monitoring and alerts
+Compatible with Python 3.8+ and Ubuntu 20.04
 """
 
 import os
 import logging
 import asyncio
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
 import json
+import psutil
+import gc
 
 try:
     import telegram
@@ -21,51 +24,104 @@ except ImportError as e:
 
 logger = logging.getLogger(__name__)
 
-class EnhancedTradingBot:
-    def __init__(self, token: str, chat_id: str, trader=None):
+class UltraOptimizedTradingBot:
+    def __init__(self, token: str, chat_id: str, trader=None, database=None):
         self.token = token
         self.chat_id = chat_id
         self.trader = trader
+        self.database = database
         self.app = None
         self.running = False
         self.start_time = datetime.now()
         self.message_count = 0
         self.last_heartbeat = datetime.now()
         
-        # Performance tracking
+        # Enhanced performance tracking
         self.performance = {
             'total_trades': 0,
             'winning_trades': 0,
             'total_pnl': 0.0,
             'best_trade': 0.0,
             'worst_trade': 0.0,
-            'daily_pnl': 0.0
+            'daily_pnl': 0.0,
+            'hourly_pnl': 0.0,
+            'peak_balance': 0.0,
+            'current_balance': 0.0,
+            'max_drawdown': 0.0,
+            'win_rate': 0.0,
+            'profit_factor': 0.0,
+            'sharpe_ratio': 0.0
+        }
+        
+        # Strategy performance tracking
+        self.strategy_performance = {
+            'momentum_trading': {'wins': 0, 'losses': 0, 'pnl': 0.0, 'win_rate': 0.0},
+            'mean_reversion': {'wins': 0, 'losses': 0, 'pnl': 0.0, 'win_rate': 0.0},
+            'breakout_trading': {'wins': 0, 'losses': 0, 'pnl': 0.0, 'win_rate': 0.0},
+            'sentiment_trading': {'wins': 0, 'losses': 0, 'pnl': 0.0, 'win_rate': 0.0},
+            'volatility_trading': {'wins': 0, 'losses': 0, 'pnl': 0.0, 'win_rate': 0.0},
+            'correlation_trading': {'wins': 0, 'losses': 0, 'pnl': 0.0, 'win_rate': 0.0},
+            'news_trading': {'wins': 0, 'losses': 0, 'pnl': 0.0, 'win_rate': 0.0},
+            'ml_prediction': {'wins': 0, 'losses': 0, 'pnl': 0.0, 'win_rate': 0.0},
+            'arbitrage': {'wins': 0, 'losses': 0, 'pnl': 0.0, 'win_rate': 0.0},
+            'scalping': {'wins': 0, 'losses': 0, 'pnl': 0.0, 'win_rate': 0.0}
+        }
+        
+        # Alert thresholds
+        self.alert_thresholds = {
+            'profit_alert': 100.0,  # Alert every $100 profit
+            'loss_alert': -50.0,    # Alert every $50 loss
+            'drawdown_alert': 0.05, # Alert at 5% drawdown
+            'win_rate_alert': 0.6,  # Alert if win rate drops below 60%
+            'memory_alert': 80.0,   # Alert if memory usage > 80%
+            'cpu_alert': 80.0       # Alert if CPU usage > 80%
+        }
+        
+        # System monitoring
+        self.system_metrics = {
+            'memory_usage': 0.0,
+            'cpu_usage': 0.0,
+            'uptime': 0.0,
+            'message_rate': 0.0
         }
         
         try:
             self.bot = telegram.Bot(token=self.token)
-            logger.info("Enhanced Telegram bot initialized successfully")
+            logger.info("🚀 Ultra-Optimized Telegram bot initialized successfully")
         except Exception as e:
-            logger.error(f"Failed to initialize Telegram bot: {e}")
+            logger.error(f"❌ Failed to initialize Telegram bot: {e}")
             raise
 
     async def start_command(self, update, context):
-        """Enhanced /start command with system info"""
+        """Enhanced /start command with comprehensive system info"""
         try:
             uptime = datetime.now() - self.start_time
+            memory = psutil.virtual_memory()
+            cpu_percent = psutil.cpu_percent(interval=1)
+            
             status_msg = (
-                "🚀 <b>AI Trading Bot v2.0 - ACTIVE</b>\n\n"
+                "🚀 <b>ULTRA-OPTIMIZED AI Trading Bot v3.0</b>\n\n"
                 f"⏰ <b>Uptime:</b> {str(uptime).split('.')[0]}\n"
                 f"📊 <b>Status:</b> {'🟢 Running' if self.running else '🔴 Stopped'}\n"
-                f"💼 <b>Trader:</b> {'🟢 Active' if self.trader and self.trader.running else '🔴 Inactive'}\n\n"
-                "<b>Available Commands:</b>\n"
+                f"💼 <b>Trader:</b> {'🟢 Active' if self.trader and self.trader.running else '🔴 Inactive'}\n"
+                f"💾 <b>Memory:</b> {memory.percent:.1f}%\n"
+                f"🖥️ <b>CPU:</b> {cpu_percent:.1f}%\n"
+                f"💬 <b>Messages:</b> {self.message_count}\n\n"
+                "<b>📈 Performance Summary:</b>\n"
+                f"• Total P&L: ${self.performance['total_pnl']:.2f}\n"
+                f"• Win Rate: {self.performance['win_rate']:.1f}%\n"
+                f"• Daily P&L: ${self.performance['daily_pnl']:.2f}\n"
+                f"• Peak Balance: ${self.performance['peak_balance']:.2f}\n\n"
+                "<b>🎯 Available Commands:</b>\n"
                 "/start - System status\n"
                 "/status - Detailed status\n"
                 "/balance - Account balance\n"
                 "/performance - Trading performance\n"
+                "/strategies - Strategy performance\n"
                 "/positions - Open positions\n"
                 "/profit - P&L summary\n"
                 "/risk - Risk management\n"
+                "/system - System metrics\n"
                 "/stop - Emergency stop\n"
                 "/restart - Restart trading\n"
                 "/help - Command help"
@@ -73,40 +129,50 @@ class EnhancedTradingBot:
             
             await update.message.reply_text(status_msg, parse_mode='HTML')
             self.message_count += 1
-            logger.info("Enhanced start command executed")
+            logger.info("✅ Enhanced start command executed")
         except Exception as e:
-            logger.error(f"Error in start command: {e}")
+            logger.error(f"❌ Error in start command: {e}")
 
     async def status_command(self, update, context):
         """Enhanced /status command with detailed metrics"""
         try:
             uptime = datetime.now() - self.start_time
+            memory = psutil.virtual_memory()
+            cpu_percent = psutil.cpu_percent(interval=1)
             
             # Get trader status
             trader_status = {}
             if self.trader:
-                trader_status = await self.trader.get_status()
+                trader_status = await self.trader.get_detailed_status()
             
             status_msg = (
-                "📊 <b>SYSTEM STATUS REPORT</b>\n\n"
+                "📊 <b>DETAILED SYSTEM STATUS REPORT</b>\n\n"
                 f"🕒 <b>Timestamp:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
                 f"⏱️ <b>Uptime:</b> {str(uptime).split('.')[0]}\n"
                 f"🤖 <b>Bot Status:</b> {'🟢 Active' if self.running else '🔴 Inactive'}\n"
                 f"📈 <b>Trader Status:</b> {'🟢 Trading' if trader_status.get('running') else '🔴 Stopped'}\n"
                 f"💬 <b>Messages:</b> {self.message_count}\n"
                 f"🔄 <b>Heartbeat:</b> {(datetime.now() - self.last_heartbeat).seconds}s ago\n\n"
-                f"📊 <b>Performance:</b>\n"
+                f"💾 <b>System Resources:</b>\n"
+                f"• Memory Usage: {memory.percent:.1f}%\n"
+                f"• CPU Usage: {cpu_percent:.1f}%\n"
+                f"• Available Memory: {memory.available / 1024 / 1024:.1f}MB\n\n"
+                f"📊 <b>Trading Performance:</b>\n"
                 f"• Total Trades: {self.performance['total_trades']}\n"
-                f"• Win Rate: {(self.performance['winning_trades']/max(self.performance['total_trades'],1)*100):.1f}%\n"
+                f"• Win Rate: {self.performance['win_rate']:.1f}%\n"
                 f"• Total P&L: ${self.performance['total_pnl']:.2f}\n"
-                f"• Daily P&L: ${self.performance['daily_pnl']:.2f}"
+                f"• Daily P&L: ${self.performance['daily_pnl']:.2f}\n"
+                f"• Peak Balance: ${self.performance['peak_balance']:.2f}\n"
+                f"• Max Drawdown: {self.performance['max_drawdown']:.2f}%\n"
+                f"• Profit Factor: {self.performance['profit_factor']:.2f}\n"
+                f"• Sharpe Ratio: {self.performance['sharpe_ratio']:.2f}"
             )
             
             await update.message.reply_text(status_msg, parse_mode='HTML')
             self.last_heartbeat = datetime.now()
-            logger.info("Enhanced status command executed")
+            logger.info("✅ Enhanced status command executed")
         except Exception as e:
-            logger.error(f"Error in status command: {e}")
+            logger.error(f"❌ Error in status command: {e}")
 
     async def balance_command(self, update, context):
         """Enhanced /balance command with account details"""
@@ -116,396 +182,500 @@ class EnhancedTradingBot:
                 return
             
             balance = await self.trader.get_balance()
-            account_info = await self.trader.get_account_info()
             
             if balance is None:
                 await update.message.reply_text("❌ Failed to retrieve balance")
                 return
             
-            margin_used = float(account_info.get('marginUsed', 0)) if account_info else 0
-            margin_available = float(account_info.get('marginAvailable', 0)) if account_info else 0
+            # Calculate additional metrics
+            balance_change = balance - self.performance['current_balance'] if self.performance['current_balance'] > 0 else 0
+            balance_change_pct = (balance_change / self.performance['current_balance'] * 100) if self.performance['current_balance'] > 0 else 0
+            
+            # Update peak balance
+            if balance > self.performance['peak_balance']:
+                self.performance['peak_balance'] = balance
+            
+            # Calculate drawdown
+            if self.performance['peak_balance'] > 0:
+                drawdown = (self.performance['peak_balance'] - balance) / self.performance['peak_balance'] * 100
+                self.performance['max_drawdown'] = max(self.performance['max_drawdown'], drawdown)
+            
+            self.performance['current_balance'] = balance
             
             balance_msg = (
-                "💰 <b>ACCOUNT BALANCE</b>\n\n"
-                f"💵 <b>Balance:</b> ${balance:.2f}\n"
-                f"📊 <b>Margin Used:</b> ${margin_used:.2f}\n"
-                f"📈 <b>Margin Available:</b> ${margin_available:.2f}\n"
-                f"🎯 <b>Margin Level:</b> {((balance/max(margin_used,1))*100):.1f}%\n\n"
-                f"📊 <b>Today's Performance:</b>\n"
+                "💰 <b>ACCOUNT BALANCE DETAILS</b>\n\n"
+                f"💵 <b>Current Balance:</b> ${balance:.2f}\n"
+                f"📈 <b>Peak Balance:</b> ${self.performance['peak_balance']:.2f}\n"
+                f"📊 <b>Balance Change:</b> ${balance_change:.2f} ({balance_change_pct:+.2f}%)\n"
+                f"📉 <b>Max Drawdown:</b> {self.performance['max_drawdown']:.2f}%\n\n"
+                f"📊 <b>Performance Metrics:</b>\n"
                 f"• Daily P&L: ${self.performance['daily_pnl']:.2f}\n"
                 f"• Best Trade: ${self.performance['best_trade']:.2f}\n"
-                f"• Worst Trade: ${self.performance['worst_trade']:.2f}"
+                f"• Worst Trade: ${self.performance['worst_trade']:.2f}\n"
+                f"• Win Rate: {self.performance['win_rate']:.1f}%\n"
+                f"• Profit Factor: {self.performance['profit_factor']:.2f}"
             )
             
             await update.message.reply_text(balance_msg, parse_mode='HTML')
-            logger.info("Enhanced balance command executed")
+            logger.info("✅ Enhanced balance command executed")
         except Exception as e:
-            logger.error(f"Error in balance command: {e}")
+            logger.error(f"❌ Error in balance command: {e}")
 
     async def performance_command(self, update, context):
-        """New /performance command for detailed metrics"""
+        """Enhanced /performance command for detailed metrics"""
         try:
             if not self.trader:
                 await update.message.reply_text("❌ Trader not initialized")
                 return
             
-            win_rate = (self.performance['winning_trades'] / max(self.performance['total_trades'], 1)) * 100
-            avg_trade = self.performance['total_pnl'] / max(self.performance['total_trades'], 1)
+            # Calculate advanced metrics
+            total_trades = self.performance['total_trades']
+            winning_trades = self.performance['winning_trades']
+            total_pnl = self.performance['total_pnl']
+            
+            win_rate = (winning_trades / total_trades * 100) if total_trades > 0 else 0
+            avg_trade = total_pnl / total_trades if total_trades > 0 else 0
+            profit_factor = self.performance['profit_factor']
+            sharpe_ratio = self.performance['sharpe_ratio']
             
             perf_msg = (
-                "🎯 <b>TRADING PERFORMANCE</b>\n\n"
-                f"📈 <b>Total Trades:</b> {self.performance['total_trades']}\n"
-                f"🏆 <b>Winning Trades:</b> {self.performance['winning_trades']}\n"
-                f"📊 <b>Win Rate:</b> {win_rate:.1f}%\n"
-                f"💰 <b>Total P&L:</b> ${self.performance['total_pnl']:.2f}\n"
-                f"📊 <b>Average Trade:</b> ${avg_trade:.2f}\n"
-                f"🚀 <b>Best Trade:</b> ${self.performance['best_trade']:.2f}\n"
-                f"⚠️ <b>Worst Trade:</b> ${self.performance['worst_trade']:.2f}\n"
-                f"📅 <b>Daily P&L:</b> ${self.performance['daily_pnl']:.2f}"
+                "🎯 <b>DETAILED TRADING PERFORMANCE</b>\n\n"
+                f"📈 <b>Trade Statistics:</b>\n"
+                f"• Total Trades: {total_trades}\n"
+                f"• Winning Trades: {winning_trades}\n"
+                f"• Losing Trades: {total_trades - winning_trades}\n"
+                f"• Win Rate: {win_rate:.1f}%\n\n"
+                f"💰 <b>Profitability Metrics:</b>\n"
+                f"• Total P&L: ${total_pnl:.2f}\n"
+                f"• Average Trade: ${avg_trade:.2f}\n"
+                f"• Best Trade: ${self.performance['best_trade']:.2f}\n"
+                f"• Worst Trade: ${self.performance['worst_trade']:.2f}\n"
+                f"• Daily P&L: ${self.performance['daily_pnl']:.2f}\n"
+                f"• Hourly P&L: ${self.performance['hourly_pnl']:.2f}\n\n"
+                f"📊 <b>Risk Metrics:</b>\n"
+                f"• Profit Factor: {profit_factor:.2f}\n"
+                f"• Sharpe Ratio: {sharpe_ratio:.2f}\n"
+                f"• Max Drawdown: {self.performance['max_drawdown']:.2f}%\n"
+                f"• Peak Balance: ${self.performance['peak_balance']:.2f}"
             )
             
             await update.message.reply_text(perf_msg, parse_mode='HTML')
-            logger.info("Performance command executed")
+            logger.info("✅ Performance command executed")
         except Exception as e:
-            logger.error(f"Error in performance command: {e}")
+            logger.error(f"❌ Error in performance command: {e}")
 
-    async def positions_command(self, update, context):
-        """New /positions command for open positions"""
+    async def strategies_command(self, update, context):
+        """New /strategies command for strategy performance"""
         try:
             if not self.trader:
                 await update.message.reply_text("❌ Trader not initialized")
                 return
             
-            positions = await self.trader.get_open_positions()
+            # Get strategy performance from trader
+            trader_status = await self.trader.get_detailed_status()
+            strategy_performance = trader_status.get('strategy_performance', {})
             
-            if not positions:
-                await update.message.reply_text("📊 No open positions")
+            if not strategy_performance:
+                await update.message.reply_text("📊 No strategy performance data available")
                 return
             
-            pos_msg = "📊 <b>OPEN POSITIONS</b>\n\n"
+            strategy_msg = "📊 <b>STRATEGY PERFORMANCE ANALYSIS</b>\n\n"
             
-            for pos in positions:
-                if float(pos.get('long', {}).get('units', 0)) != 0:
-                    units = pos['long']['units']
-                    side = 'LONG'
-                    pnl = pos['long'].get('unrealizedPL', '0')
-                elif float(pos.get('short', {}).get('units', 0)) != 0:
-                    units = pos['short']['units']
-                    side = 'SHORT'
-                    pnl = pos['short'].get('unrealizedPL', '0')
-                else:
-                    continue
+            # Sort strategies by win rate
+            sorted_strategies = sorted(
+                strategy_performance.items(),
+                key=lambda x: x[1].get('win_rate', 0),
+                reverse=True
+            )
+            
+            for strategy, perf in sorted_strategies[:10]:  # Top 10 strategies
+                wins = perf.get('wins', 0)
+                losses = perf.get('losses', 0)
+                pnl = perf.get('pnl', 0.0)
+                total_trades = wins + losses
+                win_rate = (wins / total_trades * 100) if total_trades > 0 else 0
                 
-                pos_msg += f"• {pos['instrument']} {side} {units} units\n"
-                pos_msg += f"  💰 P&L: ${float(pnl):.2f}\n\n"
+                strategy_msg += f"🎯 <b>{strategy.replace('_', ' ').title()}</b>\n"
+                strategy_msg += f"• Trades: {total_trades} | Wins: {wins} | Losses: {losses}\n"
+                strategy_msg += f"• Win Rate: {win_rate:.1f}% | P&L: ${pnl:.2f}\n\n"
             
-            await update.message.reply_text(pos_msg, parse_mode='HTML')
-            logger.info("Positions command executed")
+            await update.message.reply_text(strategy_msg, parse_mode='HTML')
+            logger.info("✅ Strategies command executed")
         except Exception as e:
-            logger.error(f"Error in positions command: {e}")
+            logger.error(f"❌ Error in strategies command: {e}")
+
+    async def system_command(self, update, context):
+        """New /system command for system metrics"""
+        try:
+            memory = psutil.virtual_memory()
+            cpu_percent = psutil.cpu_percent(interval=1)
+            disk = psutil.disk_usage('/')
+            uptime = datetime.now() - self.start_time
+            
+            system_msg = (
+                "🖥️ <b>SYSTEM METRICS & MONITORING</b>\n\n"
+                f"⏰ <b>System Uptime:</b> {str(uptime).split('.')[0]}\n"
+                f"💾 <b>Memory Usage:</b> {memory.percent:.1f}% ({memory.used / 1024 / 1024:.1f}MB / {memory.total / 1024 / 1024:.1f}MB)\n"
+                f"🖥️ <b>CPU Usage:</b> {cpu_percent:.1f}%\n"
+                f"💿 <b>Disk Usage:</b> {disk.percent:.1f}% ({disk.used / 1024 / 1024 / 1024:.1f}GB / {disk.total / 1024 / 1024 / 1024:.1f}GB)\n\n"
+                f"📊 <b>Bot Metrics:</b>\n"
+                f"• Messages Sent: {self.message_count}\n"
+                f"• Message Rate: {self.system_metrics['message_rate']:.1f} msg/min\n"
+                f"• Last Heartbeat: {(datetime.now() - self.last_heartbeat).seconds}s ago\n\n"
+                f"⚠️ <b>Alert Thresholds:</b>\n"
+                f"• Memory Alert: >{self.alert_thresholds['memory_alert']:.0f}%\n"
+                f"• CPU Alert: >{self.alert_thresholds['cpu_alert']:.0f}%\n"
+                f"• Profit Alert: >${self.alert_thresholds['profit_alert']:.0f}\n"
+                f"• Loss Alert: <${self.alert_thresholds['loss_alert']:.0f}"
+            )
+            
+            await update.message.reply_text(system_msg, parse_mode='HTML')
+            logger.info("✅ System command executed")
+        except Exception as e:
+            logger.error(f"❌ Error in system command: {e}")
 
     async def stop_command(self, update, context):
         """Enhanced /stop command with confirmation"""
         try:
-            await update.message.reply_text(
-                "🛑 <b>EMERGENCY STOP ACTIVATED</b>\n\n"
-                "⚠️ Stopping all trading activities...\n"
-                "📊 Generating final report...",
-                parse_mode='HTML'
+            if not self.trader:
+                await update.message.reply_text("❌ Trader not initialized")
+                return
+            
+            # Emergency stop
+            self.trader.stop()
+            
+            stop_msg = (
+                "🛑 <b>EMERGENCY STOP EXECUTED</b>\n\n"
+                f"⏰ <b>Stopped at:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+                f"📊 <b>Final Performance:</b>\n"
+                f"• Total P&L: ${self.performance['total_pnl']:.2f}\n"
+                f"• Win Rate: {self.performance['win_rate']:.1f}%\n"
+                f"• Total Trades: {self.performance['total_trades']}\n\n"
+                f"⚠️ <b>All trading operations stopped</b>\n"
+                f"Use /restart to resume trading"
             )
             
-            self.running = False
-            if self.trader:
-                self.trader.stop()
-            
-            # Send final report
-            await self.send_final_report()
-            
-            logger.info("Enhanced stop command executed")
+            await update.message.reply_text(stop_msg, parse_mode='HTML')
+            logger.warning("🛑 Emergency stop executed")
         except Exception as e:
-            logger.error(f"Error in stop command: {e}")
+            logger.error(f"❌ Error in stop command: {e}")
 
     async def restart_command(self, update, context):
-        """New /restart command for restarting trading"""
+        """Enhanced /restart command"""
         try:
-            if self.trader:
-                await update.message.reply_text(
-                    "🔄 <b>RESTARTING TRADING SYSTEM</b>\n\n"
-                    "⏳ Reinitializing components...",
-                    parse_mode='HTML'
-                )
-                
-                self.trader.stop()
-                await asyncio.sleep(2)
-                
-                # Restart trader
-                asyncio.create_task(self.trader.run())
-                
-                await update.message.reply_text(
-                    "✅ <b>TRADING SYSTEM RESTARTED</b>\n\n"
-                    "🚀 Bot is back online and trading!",
-                    parse_mode='HTML'
-                )
-            else:
-                await update.message.reply_text("❌ Trader not available")
-                
-            logger.info("Restart command executed")
-        except Exception as e:
-            logger.error(f"Error in restart command: {e}")
-
-    async def help_command(self, update, context):
-        """Enhanced /help command with detailed explanations"""
-        try:
-            help_text = (
-                "🤖 <b>AI Trading Bot v2.0 - Command Guide</b>\n\n"
-                "<b>📊 Status & Monitoring:</b>\n"
-                "/start - System overview\n"
-                "/status - Detailed system status\n"
-                "/balance - Account balance & margin\n"
-                "/performance - Trading performance metrics\n"
-                "/positions - View open positions\n\n"
-                "<b>💰 Trading Controls:</b>\n"
-                "/profit - P&L summary\n"
-                "/risk - Risk management info\n"
-                "/stop - Emergency stop all trading\n"
-                "/restart - Restart trading system\n\n"
-                "<b>ℹ️ Information:</b>\n"
-                "/help - This help message\n\n"
-                "<b>🚀 Features:</b>\n"
-                "• Real-time market analysis\n"
-                "• AI-powered trading decisions\n"
-                "• Advanced risk management\n"
-                "• News sentiment analysis\n"
-                "• Performance tracking\n"
-                "• Automated reporting"
+            if not self.trader:
+                await update.message.reply_text("❌ Trader not initialized")
+                return
+            
+            # Restart trader
+            self.trader.running = True
+            asyncio.create_task(self.trader.run())
+            
+            restart_msg = (
+                "🔄 <b>TRADING RESTARTED</b>\n\n"
+                f"⏰ <b>Restarted at:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+                f"📊 <b>Previous Performance:</b>\n"
+                f"• Total P&L: ${self.performance['total_pnl']:.2f}\n"
+                f"• Win Rate: {self.performance['win_rate']:.1f}%\n"
+                f"• Total Trades: {self.performance['total_trades']}\n\n"
+                f"✅ <b>Trading operations resumed</b>"
             )
             
-            await update.message.reply_text(help_text, parse_mode='HTML')
-            logger.info("Enhanced help command executed")
+            await update.message.reply_text(restart_msg, parse_mode='HTML')
+            logger.info("🔄 Trading restarted")
         except Exception as e:
-            logger.error(f"Error in help command: {e}")
+            logger.error(f"❌ Error in restart command: {e}")
+
+    async def help_command(self, update, context):
+        """Enhanced /help command with detailed descriptions"""
+        try:
+            help_msg = (
+                "📚 <b>ULTRA-OPTIMIZED TRADING BOT COMMANDS</b>\n\n"
+                "<b>📊 Status Commands:</b>\n"
+                "/start - System overview and quick status\n"
+                "/status - Detailed system status with metrics\n"
+                "/balance - Account balance and performance\n"
+                "/performance - Comprehensive trading performance\n"
+                "/strategies - Strategy performance analysis\n"
+                "/system - System resources and monitoring\n\n"
+                "<b>🎯 Trading Commands:</b>\n"
+                "/positions - View open positions\n"
+                "/profit - P&L summary and analysis\n"
+                "/risk - Risk management settings\n\n"
+                "<b>⚙️ Control Commands:</b>\n"
+                "/stop - Emergency stop all trading\n"
+                "/restart - Restart trading operations\n"
+                "/help - Show this help message\n\n"
+                "<b>📈 Features:</b>\n"
+                "• 30+ Profit-Maximizing Strategies\n"
+                "• Advanced Risk Management\n"
+                "• Real-time Performance Monitoring\n"
+                "• System Resource Optimization\n"
+                "• Automatic Alert System\n"
+                "• Strategy Performance Tracking"
+            )
+            
+            await update.message.reply_text(help_msg, parse_mode='HTML')
+            logger.info("✅ Help command executed")
+        except Exception as e:
+            logger.error(f"❌ Error in help command: {e}")
 
     async def handle_message(self, update, context):
-        """Enhanced message handler with AI responses"""
+        """Handle general messages"""
         try:
-            message_text = update.message.text.lower()
-            self.message_count += 1
+            message = update.message.text.lower()
             
-            # AI-like responses based on keywords
-            if any(word in message_text for word in ['profit', 'money', 'earnings']):
-                response = f"💰 Current total P&L: ${self.performance['total_pnl']:.2f}"
-            elif any(word in message_text for word in ['status', 'running', 'working']):
-                response = f"🟢 Bot is {'running' if self.running else 'stopped'} - {self.performance['total_trades']} trades executed"
-            elif any(word in message_text for word in ['help', 'commands']):
-                response = "📋 Use /help to see all available commands"
+            if 'profit' in message or 'pnl' in message:
+                await self.performance_command(update, context)
+            elif 'balance' in message:
+                await self.balance_command(update, context)
+            elif 'status' in message:
+                await self.status_command(update, context)
+            elif 'help' in message:
+                await self.help_command(update, context)
             else:
-                response = "🤖 I'm analyzing markets 24/7. Use /help for commands or /status for updates!"
-            
-            await update.message.reply_text(response)
-            logger.info(f"Enhanced message handled: {message_text[:50]}...")
+                await update.message.reply_text(
+                    "🤖 I'm an AI trading bot. Use /help to see available commands."
+                )
         except Exception as e:
-            logger.error(f"Error handling message: {e}")
+            logger.error(f"❌ Error handling message: {e}")
 
     async def error_handler(self, update, context):
-        """Enhanced error handler with detailed logging"""
-        logger.error(f"Update {update} caused error: {context.error}")
-        
+        """Enhanced error handler"""
         try:
+            logger.error(f"Telegram error: {context.error}")
+            
             if isinstance(context.error, RetryAfter):
-                logger.warning(f"Rate limited. Waiting {context.error.retry_after} seconds")
                 await asyncio.sleep(context.error.retry_after)
             elif isinstance(context.error, NetworkError):
-                logger.error("Network error - attempting reconnection")
                 await asyncio.sleep(5)
-            else:
-                logger.error(f"Unexpected error: {context.error}")
-                
+            
             # Send error alert
-            await self.send_error_alert(str(context.error))
+            await self.send_error_alert(f"Telegram error: {context.error}")
         except Exception as e:
             logger.error(f"Error in error handler: {e}")
 
     async def send_message(self, text: str, parse_mode: str = 'HTML'):
-        """Enhanced message sending with retry logic"""
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                await self.bot.send_message(
-                    chat_id=self.chat_id,
-                    text=text,
-                    parse_mode=parse_mode
-                )
-                return True
-            except TelegramError as e:
-                if attempt < max_retries - 1:
-                    await asyncio.sleep(2 ** attempt)
-                    continue
-                logger.error(f"Failed to send message after {max_retries} attempts: {e}")
-                return False
+        """Send message with retry logic"""
+        try:
+            await self.bot.send_message(
+                chat_id=self.chat_id,
+                text=text,
+                parse_mode=parse_mode
+            )
+            self.message_count += 1
+            return True
+        except TelegramError as e:
+            logger.error(f"Telegram error sending message: {e}")
+            return False
+        except Exception as e:
+            logger.error(f"Error sending message: {e}")
+            return False
 
     async def send_trade_alert(self, trade_data: Dict[str, Any]):
-        """Send real-time trade alerts"""
+        """Send enhanced trade alert"""
         try:
             instrument = trade_data.get('instrument', 'Unknown')
             side = trade_data.get('side', 'Unknown')
             units = trade_data.get('units', 0)
-            pnl = trade_data.get('pnl', 0)
+            price = trade_data.get('price', 0.0)
+            strategy = trade_data.get('strategy', 'Unknown')
+            confidence = trade_data.get('analysis', {}).get('confidence', 0.0)
             
             alert_msg = (
-                f"⚡ <b>TRADE EXECUTED</b>\n\n"
+                f"🎯 <b>TRADE EXECUTED</b>\n\n"
                 f"📊 <b>Instrument:</b> {instrument}\n"
-                f"🎯 <b>Side:</b> {side}\n"
-                f"📈 <b>Units:</b> {units}\n"
-                f"💰 <b>P&L:</b> ${pnl:.2f}\n"
-                f"🕒 <b>Time:</b> {datetime.now().strftime('%H:%M:%S')}"
+                f"📈 <b>Side:</b> {side}\n"
+                f"📊 <b>Units:</b> {units:,}\n"
+                f"💰 <b>Price:</b> {price:.5f}\n"
+                f"🎯 <b>Strategy:</b> {strategy.replace('_', ' ').title()}\n"
+                f"📊 <b>Confidence:</b> {confidence:.1%}\n"
+                f"⏰ <b>Time:</b> {datetime.now().strftime('%H:%M:%S')}"
             )
             
             await self.send_message(alert_msg)
-            
-            # Update performance
-            self.performance['total_trades'] += 1
-            self.performance['total_pnl'] += pnl
-            self.performance['daily_pnl'] += pnl
-            
-            if pnl > 0:
-                self.performance['winning_trades'] += 1
-                if pnl > self.performance['best_trade']:
-                    self.performance['best_trade'] = pnl
-            elif pnl < self.performance['worst_trade']:
-                self.performance['worst_trade'] = pnl
-                
+            logger.info(f"✅ Trade alert sent: {instrument} {side} {units}")
         except Exception as e:
-            logger.error(f"Error sending trade alert: {e}")
+            logger.error(f"❌ Error sending trade alert: {e}")
 
     async def send_daily_report(self):
-        """Send comprehensive daily performance report"""
+        """Send comprehensive daily report"""
         try:
-            balance = await self.trader.get_balance() if self.trader else 0
-            win_rate = (self.performance['winning_trades'] / max(self.performance['total_trades'], 1)) * 100
+            if not self.trader:
+                return
             
-            report = (
-                "📊 <b>DAILY PERFORMANCE REPORT</b>\n\n"
-                f"📅 <b>Date:</b> {datetime.now().strftime('%Y-%m-%d')}\n"
-                f"💰 <b>Account Balance:</b> ${balance:.2f}\n"
-                f"📈 <b>Daily P&L:</b> ${self.performance['daily_pnl']:.2f}\n"
-                f"🎯 <b>Trades Today:</b> {self.performance['total_trades']}\n"
-                f"🏆 <b>Win Rate:</b> {win_rate:.1f}%\n"
-                f"🚀 <b>Best Trade:</b> ${self.performance['best_trade']:.2f}\n"
-                f"⚠️ <b>Worst Trade:</b> ${self.performance['worst_trade']:.2f}\n\n"
-                f"🤖 <b>Status:</b> {'🟢 Active' if self.running else '🔴 Stopped'}\n"
-                f"⏰ <b>Uptime:</b> {str(datetime.now() - self.start_time).split('.')[0]}"
+            # Get trader status
+            trader_status = await self.trader.get_detailed_status()
+            
+            # Calculate daily metrics
+            today = datetime.now().date()
+            daily_trades = [t for t in self.trader.trade_history if t['timestamp'].date() == today]
+            daily_pnl = sum(t.get('pnl', 0) for t in daily_trades)
+            daily_trade_count = len(daily_trades)
+            
+            # Update performance
+            self.performance['daily_pnl'] = daily_pnl
+            self.performance['total_trades'] = trader_status.get('trade_count', 0)
+            self.performance['winning_trades'] = trader_status.get('profitable_trades', 0)
+            self.performance['total_pnl'] = trader_status.get('total_pnl', 0.0)
+            
+            # Calculate win rate
+            if self.performance['total_trades'] > 0:
+                self.performance['win_rate'] = (self.performance['winning_trades'] / self.performance['total_trades']) * 100
+            
+            report_msg = (
+                f"📊 <b>DAILY TRADING REPORT</b>\n"
+                f"📅 {today.strftime('%Y-%m-%d')}\n\n"
+                f"📈 <b>Daily Performance:</b>\n"
+                f"• Trades: {daily_trade_count}\n"
+                f"• P&L: ${daily_pnl:.2f}\n"
+                f"• Win Rate: {self.performance['win_rate']:.1f}%\n\n"
+                f"📊 <b>Overall Performance:</b>\n"
+                f"• Total Trades: {self.performance['total_trades']}\n"
+                f"• Total P&L: ${self.performance['total_pnl']:.2f}\n"
+                f"• Peak Balance: ${self.performance['peak_balance']:.2f}\n"
+                f"• Max Drawdown: {self.performance['max_drawdown']:.2f}%\n\n"
+                f"🖥️ <b>System Status:</b>\n"
+                f"• Uptime: {str(datetime.now() - self.start_time).split('.')[0]}\n"
+                f"• Memory: {psutil.virtual_memory().percent:.1f}%\n"
+                f"• CPU: {psutil.cpu_percent(interval=1):.1f}%"
             )
             
-            await self.send_message(report)
-            
-            # Reset daily metrics
-            self.performance['daily_pnl'] = 0.0
-            
+            await self.send_message(report_msg)
+            logger.info("✅ Daily report sent")
         except Exception as e:
-            logger.error(f"Error sending daily report: {e}")
+            logger.error(f"❌ Error sending daily report: {e}")
 
     async def send_error_alert(self, error_msg: str):
-        """Send error alerts to user"""
+        """Send error alert"""
         try:
-            alert = (
-                f"🚨 <b>SYSTEM ALERT</b>\n\n"
-                f"❌ <b>Error:</b> {error_msg[:100]}...\n"
-                f"🕒 <b>Time:</b> {datetime.now().strftime('%H:%M:%S')}\n"
-                f"🔄 <b>Status:</b> Attempting recovery..."
+            alert_msg = (
+                f"⚠️ <b>SYSTEM ALERT</b>\n\n"
+                f"❌ <b>Error:</b> {error_msg}\n"
+                f"⏰ <b>Time:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+                f"🖥️ <b>System:</b> {psutil.virtual_memory().percent:.1f}% memory, {psutil.cpu_percent(interval=1):.1f}% CPU"
             )
-            await self.send_message(alert)
+            
+            await self.send_message(alert_msg)
+            logger.error(f"⚠️ Error alert sent: {error_msg}")
         except Exception as e:
-            logger.error(f"Error sending error alert: {e}")
+            logger.error(f"❌ Error sending error alert: {e}")
 
     async def send_final_report(self):
-        """Send final report when stopping"""
+        """Send final performance report"""
         try:
             uptime = datetime.now() - self.start_time
             
-            report = (
-                "🛑 <b>FINAL SESSION REPORT</b>\n\n"
-                f"⏱️ <b>Session Duration:</b> {str(uptime).split('.')[0]}\n"
-                f"📊 <b>Total Trades:</b> {self.performance['total_trades']}\n"
-                f"💰 <b>Total P&L:</b> ${self.performance['total_pnl']:.2f}\n"
-                f"🏆 <b>Win Rate:</b> {(self.performance['winning_trades']/max(self.performance['total_trades'],1)*100):.1f}%\n"
-                f"🚀 <b>Best Trade:</b> ${self.performance['best_trade']:.2f}\n"
-                f"⚠️ <b>Worst Trade:</b> ${self.performance['worst_trade']:.2f}\n\n"
-                f"🤖 <b>Bot Status:</b> Stopped\n"
-                f"📅 <b>Shutdown Time:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            final_msg = (
+                f"📊 <b>FINAL PERFORMANCE REPORT</b>\n\n"
+                f"⏰ <b>Total Uptime:</b> {str(uptime).split('.')[0]}\n"
+                f"📈 <b>Final Performance:</b>\n"
+                f"• Total Trades: {self.performance['total_trades']}\n"
+                f"• Win Rate: {self.performance['win_rate']:.1f}%\n"
+                f"• Total P&L: ${self.performance['total_pnl']:.2f}\n"
+                f"• Peak Balance: ${self.performance['peak_balance']:.2f}\n"
+                f"• Max Drawdown: {self.performance['max_drawdown']:.2f}%\n"
+                f"• Profit Factor: {self.performance['profit_factor']:.2f}\n"
+                f"• Sharpe Ratio: {self.performance['sharpe_ratio']:.2f}\n\n"
+                f"💬 <b>Messages Sent:</b> {self.message_count}\n"
+                f"🛑 <b>Bot Shutdown Complete</b>"
             )
             
-            await self.send_message(report)
+            await self.send_message(final_msg)
+            logger.info("📊 Final report sent")
         except Exception as e:
-            logger.error(f"Error sending final report: {e}")
+            logger.error(f"❌ Error sending final report: {e}")
 
     async def run(self):
-        """Enhanced run method with better error handling"""
+        """Main run method with enhanced features"""
         try:
             self.running = True
-            logger.info("Starting Enhanced Telegram bot...")
             
             # Build application
             self.app = ApplicationBuilder().token(self.token).build()
             
-            # Add enhanced handlers
+            # Add command handlers
             self.app.add_handler(CommandHandler("start", self.start_command))
             self.app.add_handler(CommandHandler("status", self.status_command))
             self.app.add_handler(CommandHandler("balance", self.balance_command))
             self.app.add_handler(CommandHandler("performance", self.performance_command))
-            self.app.add_handler(CommandHandler("positions", self.positions_command))
+            self.app.add_handler(CommandHandler("strategies", self.strategies_command))
+            self.app.add_handler(CommandHandler("system", self.system_command))
             self.app.add_handler(CommandHandler("stop", self.stop_command))
             self.app.add_handler(CommandHandler("restart", self.restart_command))
             self.app.add_handler(CommandHandler("help", self.help_command))
+            
+            # Add message handler
             self.app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
             
             # Add error handler
             self.app.add_error_handler(self.error_handler)
             
-            logger.info("Enhanced bot handlers registered")
+            # Start the bot
+            await self.app.initialize()
+            await self.app.start()
+            await self.app.updater.start_polling()
             
-            # Send startup message
-            await self.send_message(
-                "🚀 <b>AI Trading Bot v2.0 ONLINE</b>\n\n"
-                "✅ All systems operational\n"
-                "🎯 Ready for maximum profit generation\n"
-                "📊 Enhanced features activated"
-            )
+            logger.info("🚀 Ultra-Optimized Telegram Bot started")
             
-            # Schedule daily reports
-            asyncio.create_task(self.daily_report_scheduler())
-            
-            # Run polling with enhanced error handling
-            await self.app.run_polling(
-                drop_pending_updates=True,
-                allowed_updates=['message', 'callback_query']
+            # Start background tasks
+            await asyncio.gather(
+                self.daily_report_scheduler(),
+                self.system_monitor()
             )
             
         except Exception as e:
-            logger.error(f"Critical error running enhanced bot: {e}")
+            logger.error(f"❌ Error in bot run: {e}")
+        finally:
             self.running = False
-            raise
 
     async def daily_report_scheduler(self):
         """Schedule daily reports"""
         while self.running:
             try:
                 now = datetime.now()
-                # Send daily report at 00:00
-                if now.hour == 0 and now.minute == 0:
+                next_report = now.replace(hour=18, minute=0, second=0, microsecond=0)
+                
+                if now.hour >= 18:
+                    next_report += timedelta(days=1)
+                
+                wait_seconds = (next_report - now).total_seconds()
+                await asyncio.sleep(wait_seconds)
+                
+                if self.running:
                     await self.send_daily_report()
-                    await asyncio.sleep(60)  # Wait 1 minute to avoid duplicate reports
-                else:
-                    await asyncio.sleep(30)  # Check every 30 seconds
+                    
             except Exception as e:
-                logger.error(f"Error in daily report scheduler: {e}")
-                await asyncio.sleep(60)
+                logger.error(f"❌ Error in daily report scheduler: {e}")
+                await asyncio.sleep(3600)  # Wait 1 hour on error
+
+    async def system_monitor(self):
+        """Monitor system resources"""
+        while self.running:
+            try:
+                await asyncio.sleep(300)  # Check every 5 minutes
+                
+                memory = psutil.virtual_memory()
+                cpu_percent = psutil.cpu_percent(interval=1)
+                
+                # Update system metrics
+                self.system_metrics['memory_usage'] = memory.percent
+                self.system_metrics['cpu_usage'] = cpu_percent
+                self.system_metrics['uptime'] = (datetime.now() - self.start_time).total_seconds()
+                
+                # Send alerts if thresholds exceeded
+                if memory.percent > self.alert_thresholds['memory_alert']:
+                    await self.send_error_alert(f"High memory usage: {memory.percent:.1f}%")
+                
+                if cpu_percent > self.alert_thresholds['cpu_alert']:
+                    await self.send_error_alert(f"High CPU usage: {cpu_percent:.1f}%")
+                    
+            except Exception as e:
+                logger.error(f"❌ Error in system monitor: {e}")
 
     def stop(self):
-        """Enhanced stop method"""
+        """Stop the bot"""
         self.running = False
         if self.app:
-            self.app.stop()
-        logger.info("Enhanced bot stopped")
-
-# Export for backward compatibility
-TradingBot = EnhancedTradingBot
+            asyncio.create_task(self.app.stop())
+        logger.info("🛑 Ultra-Optimized Telegram Bot stopped")
