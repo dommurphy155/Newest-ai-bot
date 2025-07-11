@@ -223,7 +223,7 @@ def generate_report():
         print("\n🚀 Next steps:")
         print("1. Run: chmod +x setup_ubuntu.sh")
         print("2. Run: ./setup_ubuntu.sh")
-        print("3. Configure your .env file")
+        print("3. Export your environment variables")
         print("4. Start trading!")
     elif passed >= total * 0.8:
         print("\n⚠️  MOSTLY READY - Minor issues detected")

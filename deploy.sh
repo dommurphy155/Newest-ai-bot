@@ -176,39 +176,29 @@ create_directories() {
 setup_environment() {
     print_status "Setting up environment configuration..."
     
-    # Create .env file if it doesn't exist
-    if [ ! -f "$BOT_DIR/.env" ]; then
-        cat > "$BOT_DIR/.env" << EOF
-# AI Trading Bot v3.0 Configuration
-# REQUIRED: Set these values before deployment
-
-# OANDA Configuration
-OANDA_API_KEY=your_oanda_api_key_here
-OANDA_ACCOUNT_ID=your_oanda_account_id_here
-OANDA_ENVIRONMENT=practice
-
-# Telegram Configuration
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
-TELEGRAM_CHAT_ID=your_telegram_chat_id_here
-
-# Optional: Hugging Face Token for AI features
-HF_TOKEN=your_huggingface_token_here
-
-# Performance Settings
-MAX_WORKERS=4
-LOG_LEVEL=INFO
-SCAN_INTERVAL=5
-NEWS_INTERVAL=10
-
-# Risk Management
-MAX_RISK_PER_TRADE=0.01
-MAX_DAILY_RISK=0.05
-MAX_POSITIONS=5
-
-EOF
-        print_warning "Created .env file - Please configure your API keys!"
+    # Check if environment variables are set
+    required_vars=("OANDA_API_KEY" "OANDA_ACCOUNT_ID" "TELEGRAM_BOT_TOKEN" "TELEGRAM_CHAT_ID")
+    missing_vars=()
+    
+    for var in "${required_vars[@]}"; do
+        if [ -z "${!var}" ]; then
+            missing_vars+=("$var")
+        fi
+    done
+    
+    if [ ${#missing_vars[@]} -ne 0 ]; then
+        print_warning "Missing required environment variables: ${missing_vars[*]}"
+        print_warning "Please export the following variables before continuing:"
+        echo ""
+        echo "export OANDA_API_KEY='your_oanda_api_key'"
+        echo "export OANDA_ACCOUNT_ID='your_account_id'"
+        echo "export TELEGRAM_BOT_TOKEN='your_bot_token'"
+        echo "export TELEGRAM_CHAT_ID='your_chat_id'"
+        echo "export OANDA_ENVIRONMENT='practice'  # or 'live'"
+        echo ""
+        print_warning "After exporting variables, run this script again"
     else
-        print_success "Environment file already exists"
+        print_success "All required environment variables are set"
     fi
 }
 
@@ -307,29 +297,27 @@ EOF
 check_env_vars() {
     print_status "Checking environment variables..."
     
-    source "$BOT_DIR/.env" 2>/dev/null || true
-    
     missing_vars=()
     
-    if [ -z "$OANDA_API_KEY" ] || [ "$OANDA_API_KEY" = "your_oanda_api_key_here" ]; then
+    if [ -z "$OANDA_API_KEY" ]; then
         missing_vars+=("OANDA_API_KEY")
     fi
     
-    if [ -z "$OANDA_ACCOUNT_ID" ] || [ "$OANDA_ACCOUNT_ID" = "your_oanda_account_id_here" ]; then
+    if [ -z "$OANDA_ACCOUNT_ID" ]; then
         missing_vars+=("OANDA_ACCOUNT_ID")
     fi
     
-    if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ "$TELEGRAM_BOT_TOKEN" = "your_telegram_bot_token_here" ]; then
+    if [ -z "$TELEGRAM_BOT_TOKEN" ]; then
         missing_vars+=("TELEGRAM_BOT_TOKEN")
     fi
     
-    if [ -z "$TELEGRAM_CHAT_ID" ] || [ "$TELEGRAM_CHAT_ID" = "your_telegram_chat_id_here" ]; then
+    if [ -z "$TELEGRAM_CHAT_ID" ]; then
         missing_vars+=("TELEGRAM_CHAT_ID")
     fi
     
     if [ ${#missing_vars[@]} -ne 0 ]; then
         print_error "Missing required environment variables: ${missing_vars[*]}"
-        print_warning "Please edit $BOT_DIR/.env and set the required values"
+        print_warning "Please export the required environment variables and try again"
         return 1
     fi
     
@@ -403,8 +391,8 @@ show_monitoring() {
     echo "  systemctl status $BOT_NAME   # Check systemd service"
     echo ""
     print_status "Configuration files:"
-    echo "  $BOT_DIR/.env                # Environment variables"
     echo "  $BOT_DIR/ecosystem.config.js # PM2 configuration"
+    echo "  /etc/systemd/system/$BOT_NAME.service # Systemd service"
 }
 
 # Main deployment function
