@@ -47,7 +47,26 @@ class EnhancedNewsScraper:
         self.news_sources = [
             {
                 'name': 'Reuters Business',
-                'url': 'https://feeds.reuters.com/reuters/businessNews',
+    "https://feeds.feedburner.com/reuters/businessNews",
+    "https://feeds.feedburner.com/reuters/UKdomesticNews",
+    "https://feeds.feedburner.com/reuters/worldNews",
+    "https://feeds.feedburner.com/Reuters/PoliticsNews",
+    "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+    "https://www.ft.com/?format=rss",
+    "https://www.marketwatch.com/rss/topstories",
+    "https://www.bloomberg.com/feed/podcast/etf-report.xml",
+    "https://www.bloomberg.com/feed/podcast/odds-on.xml",
+    "https://www.bloomberg.com/feed/podcast/what-goes-up.xml",
+    "https://www.investing.com/rss/news.rss",
+    "https://www.dailyfx.com/feeds/market-news",
+    "https://www.fxstreet.com/rss/news",
+    "https://www.forexlive.com/feed",
+    "https://www.seekingalpha.com/market_currents.xml",
+    "https://www.tradingview.com/feed/",
+    "https://www.coindesk.com/arc/outboundfeeds/rss/",
+    "https://cointelegraph.com/rss",
+    "https://www.zerohedge.com/fullrss2.xml",
+    "https://www.oann.com/feed/"
                 'type': 'rss',
                 'weight': 0.9,
                 'reliability': 0.95
