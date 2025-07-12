@@ -142,7 +142,7 @@ class EnhancedNewsScraper:
         try:
                 self.crypto_exchange = ccxt.binance()
         except Exception:
-        logger.warning("Crypto exchange initialization failed")
+                        logger.warning("Crypto exchange initialization failed")
 
     async def initialize(self):
         """Initialize the scraper"""
