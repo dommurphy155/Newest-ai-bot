@@ -55,19 +55,7 @@ class EnhancedNewsScraper:
             {'name': 'Bloomberg ETF Podcast', 'url': "https://www.bloomberg.com/feed/podcast/etf-report.xml", 'type': 'rss', 'weight': 0.8, 'reliability': 0.85},
             {'name': 'Bloomberg Odds-On Podcast', 'url': "https://www.bloomberg.com/feed/podcast/odds-on.xml", 'type': 'rss', 'weight': 0.8, 'reliability': 0.85},
             {'name': 'Bloomberg What Goes Up Podcast', 'url': "https://www.bloomberg.com/feed/podcast/what-goes-up.xml", 'type': 'rss', 'weight': 0.8, 'reliability': 0.85},
-            {'name': 'Investing.com', 'url': "https://www.investing.com/rss/news.rss", 'type': 'rss', 'weight': 0.8, 'reliability': 0.9},
-            {'name': 'DailyFX', 'url': "https://www.dailyfx.com/feeds/market-news", 'type': 'rss', 'weight': 0.8, 'reliability': 0.85},
-            {'name': 'FXStreet', 'url': "https://www.fxstreet.com/rss/news", 'type': 'rss', 'weight': 0.75, 'reliability': 0.8},
-            {'name': 'Forexlive', 'url': "https://www.forexlive.com/feed", 'type': 'rss', 'weight': 0.75, 'reliability': 0.8},
-            {'name': 'SeekingAlpha', 'url': "https://www.seekingalpha.com/market_currents.xml", 'type': 'rss', 'weight': 0.75, 'reliability': 0.8},
-            {'name': 'TradingView', 'url': "https://www.tradingview.com/feed/", 'type': 'rss', 'weight': 0.7, 'reliability': 0.8},
-            {'name': 'Coindesk', 'url': "https://www.coindesk.com/arc/outboundfeeds/rss/", 'type': 'rss', 'weight': 0.7, 'reliability': 0.8},
-            {'name': 'Cointelegraph', 'url': "https://cointelegraph.com/rss", 'type': 'rss', 'weight': 0.7, 'reliability': 0.8},
-            {'name': 'ZeroHedge', 'url': "https://www.zerohedge.com/fullrss2.xml", 'type': 'rss', 'weight': 0.6, 'reliability': 0.7},
-            {'name': 'OANN', 'url': "https://www.oann.com/feed/", 'type': 'rss', 'weight': 0.6, 'reliability': 0.7},
-            {'name': 'Bloomberg Markets', 'url': "https://feeds.bloomberg.com/markets/news.rss", 'type': 'rss', 'weight': 0.9, 'reliability': 0.95},
-            {'name': 'Yahoo Finance', 'url': "https://finance.yahoo.com/rss/headline", 'type': 'rss', 'weight': 0.7, 'reliability': 0.8},
-            {'name': 'WSJ Markets', 'url': "https://feeds.a.dj.com/rss/RSSMarketsMain.xml", 'type': 'rss', 'weight': 0.9, 'reliability': 0.95}
+            {'name': 'Investing.com', 'url': "https://www.investing.com/rss/news.rss", 'type': 'rss', 'weight': 0.8, 'reliability': 0.9}
         ]
         
         # Advanced sentiment analysis tools
